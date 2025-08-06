@@ -1,0 +1,192 @@
+import React, { useState } from 'react';
+import { X, Shield, Clock, HardDrive, Bell, Info } from 'lucide-react';
+
+interface SettingsPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const SettingsPanel: React.FC<SettingsPanelProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const [autoScan, setAutoScan] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  const [deepScanDefault, setDeepScanDefault] = useState(false);
+  const [autoCleanSafe, setAutoCleanSafe] = useState(false);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-900">设置</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* 扫描设置 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Shield className="w-5 h-5 text-blue-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">扫描设置</h4>
+            </div>
+            
+            <div className="space-y-4 ml-10">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">默认启用深度扫描</span>
+                  <p className="text-xs text-gray-500">包含系统文件和注册表扫描</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={deepScanDefault}
+                  onChange={(e) => setDeepScanDefault(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              </label>
+              
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">自动清理安全项</span>
+                  <p className="text-xs text-gray-500">扫描完成后自动清理标记为安全的项目</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoCleanSafe}
+                  onChange={(e) => setAutoCleanSafe(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* 自动化设置 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-100 p-2 rounded-lg">
+                <Clock className="w-5 h-5 text-green-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">自动化</h4>
+            </div>
+            
+            <div className="space-y-4 ml-10">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">定时扫描</span>
+                  <p className="text-xs text-gray-500">每周自动扫描一次</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoScan}
+                  onChange={(e) => setAutoScan(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* 通知设置 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Bell className="w-5 h-5 text-purple-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">通知</h4>
+            </div>
+            
+            <div className="space-y-4 ml-10">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">扫描完成通知</span>
+                  <p className="text-xs text-gray-500">扫描完成后显示通知</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={notifications}
+                  onChange={(e) => setNotifications(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* 存储信息 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-100 p-2 rounded-lg">
+                <HardDrive className="w-5 h-5 text-orange-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">存储信息</h4>
+            </div>
+            
+            <div className="ml-10 bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">C: 盘可用空间</span>
+                  <div className="font-medium text-gray-900">156.7 GB</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">总容量</span>
+                  <div className="font-medium text-gray-900">512 GB</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">已用空间</span>
+                  <div className="font-medium text-gray-900">355.3 GB</div>
+                </div>
+                <div>
+                  <span className="text-gray-600">使用率</span>
+                  <div className="font-medium text-gray-900">69.4%</div>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-orange-500 h-2 rounded-full" style={{ width: '69.4%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 关于信息 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-gray-100 p-2 rounded-lg">
+                <Info className="w-5 h-5 text-gray-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">关于</h4>
+            </div>
+            
+            <div className="ml-10 text-sm text-gray-600 space-y-1">
+              <div>WinCleaner v1.0.0</div>
+              <div>智能垃圾清理工具</div>
+              <div>© 2025 WinCleaner Team</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            保存设置
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
