@@ -72,12 +72,17 @@ function App() {
   };
 
   const handleSelectAll = (selected: boolean) => {
+    const newSelected = new Set(selectedItems);
+
     if (selected) {
-      const allIds = filteredResults.map(item => item.id);
-      setSelectedItems(new Set(allIds));
+      // 添加当前筛选结果中的所有项目
+      filteredResults.forEach(item => newSelected.add(item.id));
     } else {
-      setSelectedItems(new Set());
+      // 只移除当前筛选结果中的项目，保留其他分类中的选择
+      filteredResults.forEach(item => newSelected.delete(item.id));
     }
+
+    setSelectedItems(newSelected);
   };
 
   const getTotalSelectedSize = () => {

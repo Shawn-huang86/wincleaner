@@ -87,15 +87,23 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  // 优化选择状态计算，只计算当前页面的项目
-  const allSelected = paginatedResults.length > 0 && paginatedResults.every(item => selectedItems.has(item.id));
-  const someSelected = paginatedResults.some(item => selectedItems.has(item.id));
+  // 计算选择状态 - 基于所有筛选结果，不只是当前页
+  const allFilteredSelected = filteredResults.length > 0 && filteredResults.every(item => selectedItems.has(item.id));
+  const someFilteredSelected = filteredResults.some(item => selectedItems.has(item.id));
 
-  // 全选功能改为当前页全选
-  const handleSelectAllCurrentPage = (selected: boolean) => {
+  // 当前页选择状态
+  const allCurrentPageSelected = paginatedResults.length > 0 && paginatedResults.every(item => selectedItems.has(item.id));
+  const someCurrentPageSelected = paginatedResults.some(item => selectedItems.has(item.id));
+
+  // 全选功能 - 直接调用父组件的 onSelectAll
+  const handleSelectAll = (selected: boolean) => {
+    onSelectAll(selected);
+  };
+
+  // 当前页全选功能
+  const handleSelectCurrentPage = (selected: boolean) => {
     if (selected) {
-      const currentPageIds = paginatedResults.map(item => item.id);
-      currentPageIds.forEach(id => onSelectItem(id, true));
+      paginatedResults.forEach(item => onSelectItem(item.id, true));
     } else {
       paginatedResults.forEach(item => onSelectItem(item.id, false));
     }
@@ -175,21 +183,43 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <tr>
               <th className="px-6 py-4 text-left">
-                <button
-                  onClick={() => handleSelectAllCurrentPage(!allSelected)}
-                  className="flex items-center gap-3 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-                >
-                  {allSelected ? (
-                    <CheckSquare className="w-5 h-5 text-blue-600" />
-                  ) : someSelected ? (
-                    <div className="w-5 h-5 bg-blue-600 rounded border-2 border-blue-600 relative">
-                      <div className="absolute inset-1 bg-white rounded-sm" />
-                    </div>
-                  ) : (
-                    <Square className="w-5 h-5" />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleSelectAll(!allFilteredSelected)}
+                    className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+                    title={`全选所有 ${filteredResults.length} 项`}
+                  >
+                    {allFilteredSelected ? (
+                      <CheckSquare className="w-5 h-5 text-blue-600" />
+                    ) : someFilteredSelected ? (
+                      <div className="w-5 h-5 bg-blue-600 rounded border-2 border-blue-600 relative">
+                        <div className="absolute inset-1 bg-white rounded-sm" />
+                      </div>
+                    ) : (
+                      <Square className="w-5 h-5" />
+                    )}
+                    全选
+                  </button>
+
+                  {filteredResults.length > itemsPerPage && (
+                    <button
+                      onClick={() => handleSelectCurrentPage(!allCurrentPageSelected)}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors ml-2 px-2 py-1 rounded border border-gray-300 hover:border-gray-400"
+                      title={`仅选择当前页 ${paginatedResults.length} 项`}
+                    >
+                      {allCurrentPageSelected ? (
+                        <CheckSquare className="w-3 h-3" />
+                      ) : someCurrentPageSelected ? (
+                        <div className="w-3 h-3 bg-gray-400 rounded border border-gray-400 relative">
+                          <div className="absolute inset-0.5 bg-white rounded-sm" />
+                        </div>
+                      ) : (
+                        <Square className="w-3 h-3" />
+                      )}
+                      本页
+                    </button>
                   )}
-                  {filteredResults.length > itemsPerPage ? '本页全选' : '全选'}
-                </button>
+                </div>
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">名称</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">大小</th>
