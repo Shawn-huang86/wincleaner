@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckSquare, Square, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, Folder, Globe, User, Settings, Archive, Download } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { CheckSquare, Square, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, Folder, Globe, User, Settings, Archive, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -18,6 +18,24 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   onSelectItem,
   onSelectAll,
 }) => {
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50; // 每页显示50项，优化性能
+
+  // 分页数据
+  const paginatedResults = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredResults.slice(startIndex, endIndex);
+  }, [filteredResults, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+
+  // 当筛选结果改变时重置到第一页
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredResults.length]);
+
   const getCategoryIcon = (category: string) => {
     const icons = {
       system: Settings,
@@ -69,8 +87,19 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     }
   };
 
-  const allSelected = filteredResults.length > 0 && filteredResults.every(item => selectedItems.has(item.id));
-  const someSelected = filteredResults.some(item => selectedItems.has(item.id));
+  // 优化选择状态计算，只计算当前页面的项目
+  const allSelected = paginatedResults.length > 0 && paginatedResults.every(item => selectedItems.has(item.id));
+  const someSelected = paginatedResults.some(item => selectedItems.has(item.id));
+
+  // 全选功能改为当前页全选
+  const handleSelectAllCurrentPage = (selected: boolean) => {
+    if (selected) {
+      const currentPageIds = paginatedResults.map(item => item.id);
+      currentPageIds.forEach(id => onSelectItem(id, true));
+    } else {
+      paginatedResults.forEach(item => onSelectItem(item.id, false));
+    }
+  };
 
   if (filteredResults.length === 0 && results.length === 0) {
     return (
@@ -112,13 +141,42 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   return (
     <div className="overflow-hidden bg-white">
+      {/* 分页信息和统计 */}
+      {filteredResults.length > itemsPerPage && (
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            显示第 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredResults.length)} 项，
+            共 {filteredResults.length} 项
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-1 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm text-gray-700 px-2">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <tr>
               <th className="px-6 py-4 text-left">
                 <button
-                  onClick={() => onSelectAll(!allSelected)}
+                  onClick={() => handleSelectAllCurrentPage(!allSelected)}
                   className="flex items-center gap-3 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
                 >
                   {allSelected ? (
@@ -130,7 +188,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                   ) : (
                     <Square className="w-5 h-5" />
                   )}
-                  全选
+                  {filteredResults.length > itemsPerPage ? '本页全选' : '全选'}
                 </button>
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">名称</th>
@@ -141,7 +199,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {filteredResults.map((item) => (
+            {paginatedResults.map((item) => (
               <tr key={item.id} className="hover:bg-blue-50/50 transition-colors">
                 <td className="px-6 py-5">
                   <button
