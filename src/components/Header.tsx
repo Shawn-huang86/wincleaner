@@ -1,14 +1,15 @@
 import React from 'react';
-import { Trash2, Shield, Sparkles, Search, MessageCircle, Scan } from 'lucide-react';
+import { Trash2, Shield, Sparkles, Search, MessageCircle, Scan, Zap } from 'lucide-react';
 
 interface HeaderProps {
   onOpenFileIdentifier: () => void;
-  onOpenChatCleaning: () => void;
+  onStartChatScan: () => void;
   onStartMainScan: () => void;
+  onStartDeepScan: () => void;
   isScanning?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onOpenChatCleaning, onStartMainScan, isScanning = false }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartChatScan, onStartMainScan, onStartDeepScan, isScanning = false }) => {
   return (
     <div className="flex items-center justify-between">
       {/* 左侧标题 */}
@@ -47,18 +48,30 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onOpenChat
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-md hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           <Scan className="w-3 h-3" />
-          <span className="hidden sm:inline">{isScanning ? '扫描中...' : '扫描垃圾文件'}</span>
-          <span className="sm:hidden">{isScanning ? '扫描中' : '扫描'}</span>
+          <span className="hidden sm:inline">{isScanning ? '扫描中...' : '快速扫描'}</span>
+          <span className="sm:hidden">{isScanning ? '扫描中' : '快速'}</span>
         </button>
 
-        {/* 微信QQ清理按钮 */}
+        {/* 深度扫描按钮 */}
         <button
-          onClick={onOpenChatCleaning}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-600 to-blue-600 text-white text-sm font-medium rounded-md hover:from-green-700 hover:to-blue-700 transition-all duration-200"
+          onClick={onStartDeepScan}
+          disabled={isScanning}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-md hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          <Zap className="w-3 h-3" />
+          <span className="hidden sm:inline">{isScanning ? '扫描中...' : '深度扫描'}</span>
+          <span className="sm:hidden">{isScanning ? '扫描中' : '深度'}</span>
+        </button>
+
+        {/* 微信QQ扫描按钮 */}
+        <button
+          onClick={onStartChatScan}
+          disabled={isScanning}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-600 to-blue-600 text-white text-sm font-medium rounded-md hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
           <MessageCircle className="w-3 h-3" />
-          <span className="hidden sm:inline">微信QQ清理</span>
-          <span className="sm:hidden">微信QQ</span>
+          <span className="hidden sm:inline">{isScanning ? '扫描中...' : '微信QQ扫描'}</span>
+          <span className="sm:hidden">{isScanning ? '扫描中' : '微信QQ'}</span>
         </button>
 
         {/* 文件识别按钮 */}

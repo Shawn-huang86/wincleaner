@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Download, X } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
 import { formatFileSize } from '../utils/helpers';
 
 interface SuccessDialogProps {
@@ -28,35 +28,30 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
           </button>
         </div>
         
-        <div className="p-6">
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-green-100 rounded-full">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+        <div className="p-8 text-center">
+          <div className="mb-6">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900 mb-2">清理成功！</h4>
-              <p className="text-sm text-gray-700 mb-3">
-                已成功释放 <span className="font-semibold text-green-600">{formatFileSize(totalSpaceFreed)}</span> 磁盘空间。
-              </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-blue-800 text-sm font-medium mb-1">
-                  <Download className="w-4 h-4" />
-                  清理报告已生成
-                </div>
-                <p className="text-blue-700 text-sm">
-                  详细的清理报告已自动下载到您的设备，包含所有清理项目的详细信息。
-                </p>
-              </div>
-            </div>
+            <h4 className="text-xl font-semibold text-gray-900 mb-2">清理成功！</h4>
+            <p className="text-gray-600">
+              已成功释放 <span className="font-semibold text-green-600 text-lg">{formatFileSize(totalSpaceFreed)}</span> 磁盘空间
+            </p>
+          </div>
+
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-800 text-sm">
+              🎉 所有文件已安全移至回收站，如需恢复可从回收站还原
+            </p>
           </div>
         </div>
         
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <div className="flex items-center justify-center p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            完成
+            ✨ 完成
           </button>
         </div>
       </div>

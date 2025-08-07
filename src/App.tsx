@@ -11,9 +11,8 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
-import { ChatCleaningPanel } from './components/ChatCleaningPanel';
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
-import { simulateScanning, generateReport } from './utils/scanner';
+import { simulateScanning } from './utils/scanner';
 
 function App() {
   const [isScanning, setIsScanning] = useState(false);
@@ -27,7 +26,6 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
-  const [showChatCleaningPanel, setShowChatCleaningPanel] = useState(false);
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
     qqMonths: 3
@@ -45,21 +43,45 @@ function App() {
   const [scanHistory, setScanHistory] = useState<Array<{date: string, itemsFound: number, spaceFreed: number}>>([]);
   const [cleaningCancelled, setCleaningCancelled] = useState(false);
 
+
+
   // 根据选中的分类过滤结果
-  const filteredResults = selectedCategory 
+  const filteredResults = selectedCategory
     ? scanResults.filter(item => item.category === selectedCategory)
     : scanResults;
-  const handleStartScan = async () => {
+  const handleStartScan = async (scanDeep: boolean = deepScan) => {
     setIsScanning(true);
     setScanResults([]);
     setSelectedItems(new Set());
     setSelectedCategory(null);
-    
+    setDeepScan(scanDeep);
+
     // 主扫描排除微信QQ文件
-    await simulateScanning(setScanProgress, setScanResults, deepScan, chatFileSettings, 'exclude-chat');
-    
+    await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+
     setIsScanning(false);
-    
+
+    // Add to scan history
+    const newScan = {
+      date: new Date().toLocaleDateString('zh-CN'),
+      itemsFound: scanResults.length,
+      spaceFreed: 0
+    };
+    setScanHistory(prev => [newScan, ...prev.slice(0, 4)]);
+  };
+
+  const handleStartChatScan = async () => {
+    setIsScanning(true);
+    setScanResults([]);
+    setSelectedItems(new Set());
+    setSelectedCategory(null);
+    setDeepScan(true); // 微信QQ扫描默认为深度扫描
+
+    // 只扫描微信QQ文件
+    await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
+
+    setIsScanning(false);
+
     // Add to scan history
     const newScan = {
       date: new Date().toLocaleDateString('zh-CN'),
@@ -110,13 +132,54 @@ function App() {
     setShowConfirmDialog(true);
   };
 
-  const confirmClean = async () => {
+  const confirmClean = async (timeRange?: string, appSelection?: { includeWechat: boolean; includeQQ: boolean }) => {
     setShowConfirmDialog(false);
     setShowCleaningProgress(true);
     setCleaningCancelled(false);
 
-    const itemsToClean = scanResults.filter(item => selectedItems.has(item.id));
-    const totalSize = getTotalSelectedSize();
+    let itemsToClean = scanResults.filter(item => selectedItems.has(item.id));
+
+    // 如果指定了时间范围，进一步过滤文件
+    if (timeRange && timeRange !== 'all') {
+      const now = new Date();
+      const cutoffDate = new Date();
+
+      switch (timeRange) {
+        case '1week':
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case '1month':
+          cutoffDate.setMonth(now.getMonth() - 1);
+          break;
+        case '3months':
+          cutoffDate.setMonth(now.getMonth() - 3);
+          break;
+        case '6months':
+          cutoffDate.setMonth(now.getMonth() - 6);
+          break;
+        case '1year':
+          cutoffDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+
+      itemsToClean = itemsToClean.filter(item => {
+        // 假设文件有lastModified属性，如果没有则包含在内
+        if (!item.lastModified) return true;
+        // 删除指定时间之前的文件（小于cutoffDate的文件）
+        return new Date(item.lastModified) <= cutoffDate;
+      });
+    }
+
+    // 根据应用选择过滤
+    if (appSelection) {
+      itemsToClean = itemsToClean.filter(item => {
+        if (item.category === 'wechat') return appSelection.includeWechat;
+        if (item.category === 'qq') return appSelection.includeQQ;
+        return true; // 其他类型的文件保持不变
+      });
+    }
+
+    const totalSize = itemsToClean.reduce((sum, item) => sum + item.sizeBytes, 0);
     let cleanedSize = 0;
 
     // 初始化清理进度
@@ -168,16 +231,6 @@ function App() {
         index === 0 ? { ...scan, spaceFreed: totalSize } : scan
       ));
 
-      // Generate and download report
-      const report = generateReport(itemsToClean, totalSize);
-      const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `清理报告_${new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-
       setShowSuccessDialog(true);
     }
 
@@ -198,12 +251,7 @@ function App() {
     setCurrentCleaningItem(null);
   };
 
-  const handleChatCleanFiles = (fileIds: string[]) => {
-    // 选中指定的文件
-    setSelectedItems(new Set(fileIds));
-    // 直接开始清理
-    setShowConfirmDialog(true);
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
@@ -211,8 +259,9 @@ function App() {
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <Header
           onOpenFileIdentifier={() => setShowFileIdentifier(true)}
-          onOpenChatCleaning={() => setShowChatCleaningPanel(true)}
-          onStartMainScan={handleStartScan}
+          onStartChatScan={handleStartChatScan}
+          onStartMainScan={() => handleStartScan(false)}
+          onStartDeepScan={() => handleStartScan(true)}
           isScanning={isScanning}
         />
       </div>
@@ -247,7 +296,7 @@ function App() {
                   isScanning={isScanning}
                   deepScan={deepScan}
                   scanProgress={scanProgress}
-                  onToggleDeepScan={setDeepScan}
+                  scanResults={scanResults}
                 />
 
                 <div className="flex-1 flex flex-col min-h-0">
@@ -307,13 +356,6 @@ function App() {
       <FileIdentifier
         isOpen={showFileIdentifier}
         onClose={() => setShowFileIdentifier(false)}
-      />
-
-      <ChatCleaningPanel
-        isOpen={showChatCleaningPanel}
-        onClose={() => setShowChatCleaningPanel(false)}
-        onCleanFiles={handleChatCleanFiles}
-        chatFileSettings={chatFileSettings}
       />
     </div>
   );

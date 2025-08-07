@@ -334,50 +334,19 @@ export const simulateScanning = async (
   }
 };
 
-export const generateReport = (cleanedItems: ScanItem[], totalSize: number): string => {
-  const now = new Date();
-  const timestamp = now.toLocaleString('zh-CN');
-  const filename = `清理报告_${now.toISOString().slice(0, 19).replace(/[:-]/g, '')}`;
-  
-  let report = `==================================
-        WinCleaner 清理报告
-==================================
-📅 时间：${timestamp}
-💻 用户：${navigator.userAgent.includes('Windows') ? '当前用户' : '系统用户'}
-💾 释放空间：${formatFileSize(totalSize)}
-
-🧹 清理项目：
-`;
-
-  cleanedItems.forEach(item => {
-    report += `  • ${item.name}: ${item.path} (${item.size})\n`;
-  });
-
-  report += `
-✅ 所有文件已移至回收站，可恢复
-📄 报告已生成并下载到本地
-🕒 生成时间：${timestamp}
-
-=======================================
-            感谢使用 WinCleaner
-=======================================
-`;
-
-  return report;
-};
-
 // Helper function to format file sizes
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return 'N/A';
-  
+
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
   let unitIndex = 0;
-  
+
   while (size >= 1024 && unitIndex < units.length - 1) {
     size /= 1024;
     unitIndex++;
   }
-  
+
   return `${size.toFixed(size < 10 && unitIndex > 0 ? 2 : 1)} ${units[unitIndex]}`;
 };
+
