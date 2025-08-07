@@ -236,7 +236,7 @@ const SCAN_ITEMS = [
 ];
 
 // 检查文件是否应该被时间筛选排除
-const shouldExcludeByTime = (item: any, chatSettings: ChatFileSettings): boolean => {
+const shouldExcludeByTime = (item: Pick<ScanItem, 'category' | 'type'>, chatSettings: ChatFileSettings): boolean => {
   const isChatFile = item.category === 'wechat' || item.category === 'qq';
   if (!isChatFile) return false;
 
