@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { CategoryFilter } from './components/CategoryFilter';
+import { Sidebar } from './components/Sidebar';
 import { ScanSection } from './components/ScanSection';
 import { ResultsTable } from './components/ResultsTable';
 import { StatusBar } from './components/StatusBar';
@@ -191,53 +192,70 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <div className="max-w-7xl mx-auto p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
+      {/* 顶部标题栏 */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2">
         <Header onOpenFileIdentifier={() => setShowFileIdentifier(true)} />
-        
-        {/* Dashboard */}
-        <Dashboard 
+      </div>
+
+      {/* 主要内容区域 */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* 左侧边栏 */}
+        <Sidebar
           scanResults={scanResults}
-          selectedItems={selectedItems}
-          scanHistory={scanHistory}
-          onShowSettings={() => setShowSettings(true)}
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+          isScanning={isScanning}
         />
-        
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mt-6">
-          <ScanSection
-            isScanning={isScanning}
-            deepScan={deepScan}
-            scanProgress={scanProgress}
-            onStartScan={handleStartScan}
-            onToggleDeepScan={setDeepScan}
-          />
-          
-          {scanResults.length > 0 && (
-            <CategoryFilter
+
+        {/* 右侧主内容 */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* 仪表板 */}
+          <div className="p-3 bg-gray-50 border-b border-gray-200">
+            <Dashboard
               scanResults={scanResults}
-              selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
+              selectedItems={selectedItems}
+              scanHistory={scanHistory}
+              onShowSettings={() => setShowSettings(true)}
             />
-          )}
-          
-          <ResultsTable
-            results={scanResults}
-            filteredResults={filteredResults}
-            selectedItems={selectedItems}
-            onSelectItem={handleSelectItem}
-            onSelectAll={handleSelectAll}
-          />
-          
-          <StatusBar
-            scanResults={filteredResults}
-            selectedItems={selectedItems}
-            totalSelectedSize={getTotalSelectedSize()}
-            cleaningProgress={{ current: 0, total: 0 }}
-            onCleanSelected={handleCleanSelected}
-          />
+          </div>
+
+          {/* 扫描和结果区域 */}
+          <div className="flex-1 flex flex-col">
+            <div className="p-3">
+              <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col" style={{height: 'calc(100vh - 200px)'}}>
+                <ScanSection
+                  isScanning={isScanning}
+                  deepScan={deepScan}
+                  scanProgress={scanProgress}
+                  onStartScan={handleStartScan}
+                  onToggleDeepScan={setDeepScan}
+                />
+
+                <div className="flex-1 flex flex-col min-h-0">
+                  <ResultsTable
+                    results={scanResults}
+                    filteredResults={filteredResults}
+                    selectedItems={selectedItems}
+                    onSelectItem={handleSelectItem}
+                    onSelectAll={handleSelectAll}
+                  />
+                </div>
+
+                <StatusBar
+                  scanResults={filteredResults}
+                  selectedItems={selectedItems}
+                  totalSelectedSize={getTotalSelectedSize()}
+                  cleaningProgress={{ current: 0, total: 0 }}
+                  onCleanSelected={handleCleanSelected}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* 对话框组件 */}
       <ConfirmDialog
         isOpen={showConfirmDialog}
         selectedCount={selectedItems.size}

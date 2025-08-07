@@ -35,18 +35,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
-      <div className="flex items-center gap-3 text-sm text-gray-700">
-        {isCleaning && <Loader2 className="w-4 h-4 animate-spin" />}
+    <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
+      <div className="flex items-center gap-2 text-xs text-gray-700">
+        {isCleaning && <Loader2 className="w-3 h-3 animate-spin" />}
         <span className="font-medium">{getStatusText()}</span>
       </div>
 
       <button
         onClick={onCleanSelected}
         disabled={selectedCount === 0 || isCleaning}
-        className="flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-lg hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
       >
-        <Trash2 className="w-5 h-5" />
+        <Trash2 className="w-4 h-4" />
         清理选中项
       </button>
     </div>

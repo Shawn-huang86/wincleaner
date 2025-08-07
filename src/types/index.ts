@@ -5,7 +5,7 @@ export interface ScanItem {
   size: string;
   sizeBytes: number;
   type: string;
-  category: 'system' | 'browser' | 'user' | 'registry' | 'backup' | 'downloads';
+  category: 'system' | 'browser' | 'user' | 'registry' | 'backup' | 'downloads' | 'wechat' | 'qq';
   riskLevel: 'safe' | 'caution' | 'high' | 'unknown';
   suggestion: string;
 }

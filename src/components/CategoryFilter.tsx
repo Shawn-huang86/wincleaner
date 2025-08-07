@@ -1,5 +1,5 @@
 import React from 'react';
-import { Folder, Globe, User, Settings, Archive, Download, CheckCircle } from 'lucide-react';
+import { Folder, Globe, User, Settings, Archive, Download, CheckCircle, MessageCircle, Users } from 'lucide-react';
 import { ScanItem, CategoryStats } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -46,11 +46,23 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
         icon: 'Archive', 
         color: 'bg-indigo-100 text-indigo-700 border-indigo-200' 
       },
-      { 
-        category: 'downloads', 
-        displayName: '下载文件', 
-        icon: 'Download', 
-        color: 'bg-red-100 text-red-700 border-red-200' 
+      {
+        category: 'downloads',
+        displayName: '下载文件',
+        icon: 'Download',
+        color: 'bg-red-100 text-red-700 border-red-200'
+      },
+      {
+        category: 'wechat',
+        displayName: '微信清理',
+        icon: 'MessageCircle',
+        color: 'bg-green-100 text-green-700 border-green-200'
+      },
+      {
+        category: 'qq',
+        displayName: 'QQ清理',
+        icon: 'Users',
+        color: 'bg-blue-100 text-blue-700 border-blue-200'
       },
     ];
 
@@ -74,6 +86,8 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       Archive: Archive,
       Download: Download,
       Folder: Folder,
+      MessageCircle: MessageCircle,
+      Users: Users,
     };
     const IconComponent = icons[iconName as keyof typeof icons] || Folder;
     return <IconComponent className="w-5 h-5" />;

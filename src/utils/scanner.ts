@@ -100,6 +100,138 @@ const SCAN_ITEMS = [
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 升级备份，可清理',
     isDeepScan: true
+  },
+  // 微信清理项目
+  {
+    name: '微信聊天记录缓存',
+    path: 'C:\\Users\\User\\Documents\\WeChat Files\\wxid_xxx\\FileStorage\\Cache',
+    type: '聊天缓存',
+    category: 'wechat' as const,
+    sizeBytes: 1500000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: '微信图片缓存',
+    path: 'C:\\Users\\User\\Documents\\WeChat Files\\wxid_xxx\\FileStorage\\Image',
+    type: '图片缓存',
+    category: 'wechat' as const,
+    sizeBytes: 2800000000,
+    riskLevel: 'caution' as const,
+    suggestion: '⚠️ 包含聊天图片，建议备份后清理',
+    isDeepScan: false
+  },
+  {
+    name: '微信视频缓存',
+    path: 'C:\\Users\\User\\Documents\\WeChat Files\\wxid_xxx\\FileStorage\\Video',
+    type: '视频缓存',
+    category: 'wechat' as const,
+    sizeBytes: 4200000000,
+    riskLevel: 'caution' as const,
+    suggestion: '⚠️ 包含聊天视频，建议备份后清理',
+    isDeepScan: false
+  },
+  {
+    name: '微信临时文件',
+    path: 'C:\\Users\\User\\AppData\\Roaming\\Tencent\\WeChat\\Temp',
+    type: '临时文件',
+    category: 'wechat' as const,
+    sizeBytes: 800000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: '微信日志文件',
+    path: 'C:\\Users\\User\\Documents\\WeChat Files\\wxid_xxx\\Logs',
+    type: '日志文件',
+    category: 'wechat' as const,
+    sizeBytes: 300000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: '微信小程序缓存',
+    path: 'C:\\Users\\User\\Documents\\WeChat Files\\Applet',
+    type: '小程序缓存',
+    category: 'wechat' as const,
+    sizeBytes: 600000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  // QQ清理项目
+  {
+    name: 'QQ聊天记录缓存',
+    path: 'C:\\Users\\User\\Documents\\Tencent Files\\QQ号码\\FileRecv',
+    type: '聊天缓存',
+    category: 'qq' as const,
+    sizeBytes: 1200000000,
+    riskLevel: 'caution' as const,
+    suggestion: '⚠️ 包含接收文件，建议检查后清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ图片缓存',
+    path: 'C:\\Users\\User\\Documents\\Tencent Files\\QQ号码\\Image',
+    type: '图片缓存',
+    category: 'qq' as const,
+    sizeBytes: 2100000000,
+    riskLevel: 'caution' as const,
+    suggestion: '⚠️ 包含聊天图片，建议备份后清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ临时文件',
+    path: 'C:\\Users\\User\\AppData\\Roaming\\Tencent\\QQ\\Temp',
+    type: '临时文件',
+    category: 'qq' as const,
+    sizeBytes: 500000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ表情包缓存',
+    path: 'C:\\Users\\User\\Documents\\Tencent Files\\QQ号码\\CustomFace',
+    type: '表情缓存',
+    category: 'qq' as const,
+    sizeBytes: 800000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ语音缓存',
+    path: 'C:\\Users\\User\\Documents\\Tencent Files\\QQ号码\\Audio',
+    type: '语音缓存',
+    category: 'qq' as const,
+    sizeBytes: 400000000,
+    riskLevel: 'caution' as const,
+    suggestion: '⚠️ 包含语音消息，建议备份后清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ游戏缓存',
+    path: 'C:\\Users\\User\\AppData\\Roaming\\Tencent\\QQGame',
+    type: '游戏缓存',
+    category: 'qq' as const,
+    sizeBytes: 1500000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
+  },
+  {
+    name: 'QQ浏览器缓存',
+    path: 'C:\\Users\\User\\AppData\\Roaming\\Tencent\\QQBrowser\\User Data\\Default\\Cache',
+    type: '浏览器缓存',
+    category: 'qq' as const,
+    sizeBytes: 900000000,
+    riskLevel: 'safe' as const,
+    suggestion: '✅ 可安全清理',
+    isDeepScan: false
   }
 ];
 
