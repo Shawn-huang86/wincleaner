@@ -204,6 +204,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">大小</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">类型</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">分类</th>
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">修改时间</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">安全评估</th>
             </tr>
           </thead>
@@ -242,6 +243,18 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                   <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(item.category)}`}>
                     {getCategoryIcon(item.category)}
                     {item.category}
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="text-xs text-gray-600">
+                    {item.lastModified ? (
+                      <div>
+                        <div>{item.lastModified.toLocaleDateString('zh-CN')}</div>
+                        <div className="text-gray-400">{item.lastModified.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">未知</span>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3">

@@ -1,11 +1,14 @@
 import React from 'react';
-import { Trash2, Shield, Sparkles, Search } from 'lucide-react';
+import { Trash2, Shield, Sparkles, Search, MessageCircle, Scan } from 'lucide-react';
 
 interface HeaderProps {
   onOpenFileIdentifier: () => void;
+  onOpenChatCleaning: () => void;
+  onStartMainScan: () => void;
+  isScanning?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onOpenChatCleaning, onStartMainScan, isScanning = false }) => {
   return (
     <div className="flex items-center justify-between">
       {/* 左侧标题 */}
@@ -36,6 +39,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier }) => {
           <span className="text-gray-400">•</span>
           <span>智能建议</span>
         </div>
+
+        {/* 主扫描按钮 */}
+        <button
+          onClick={onStartMainScan}
+          disabled={isScanning}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium rounded-md hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+        >
+          <Scan className="w-3 h-3" />
+          <span className="hidden sm:inline">{isScanning ? '扫描中...' : '扫描垃圾文件'}</span>
+          <span className="sm:hidden">{isScanning ? '扫描中' : '扫描'}</span>
+        </button>
+
+        {/* 微信QQ清理按钮 */}
+        <button
+          onClick={onOpenChatCleaning}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-green-600 to-blue-600 text-white text-sm font-medium rounded-md hover:from-green-700 hover:to-blue-700 transition-all duration-200"
+        >
+          <MessageCircle className="w-3 h-3" />
+          <span className="hidden sm:inline">微信QQ清理</span>
+          <span className="sm:hidden">微信QQ</span>
+        </button>
 
         {/* 文件识别按钮 */}
         <button

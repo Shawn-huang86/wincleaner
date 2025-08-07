@@ -8,6 +8,8 @@ export interface ScanItem {
   category: 'system' | 'browser' | 'user' | 'registry' | 'backup' | 'downloads' | 'wechat' | 'qq';
   riskLevel: 'safe' | 'caution' | 'high' | 'unknown';
   suggestion: string;
+  lastModified?: Date;
+  isChatFile?: boolean;
 }
 
 export interface ScanProgress {
@@ -28,4 +30,9 @@ export interface CategoryStats {
   totalSize: number;
   icon: string;
   color: string;
+}
+
+export interface ChatFileSettings {
+  wechatMonths: number;
+  qqMonths: number;
 }

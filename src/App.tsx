@@ -11,7 +11,8 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
-import { ScanItem, ScanProgress } from './types';
+import { ChatCleaningPanel } from './components/ChatCleaningPanel';
+import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning, generateReport } from './utils/scanner';
 
 function App() {
@@ -26,6 +27,11 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
+  const [showChatCleaningPanel, setShowChatCleaningPanel] = useState(false);
+  const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
+    wechatMonths: 3,
+    qqMonths: 3
+  });
   const [cleaningProgress, setCleaningProgress] = useState({
     current: 0,
     total: 0,
@@ -49,7 +55,8 @@ function App() {
     setSelectedItems(new Set());
     setSelectedCategory(null);
     
-    await simulateScanning(setScanProgress, setScanResults, deepScan);
+    // 主扫描排除微信QQ文件
+    await simulateScanning(setScanProgress, setScanResults, deepScan, chatFileSettings, 'exclude-chat');
     
     setIsScanning(false);
     
@@ -191,11 +198,23 @@ function App() {
     setCurrentCleaningItem(null);
   };
 
+  const handleChatCleanFiles = (fileIds: string[]) => {
+    // 选中指定的文件
+    setSelectedItems(new Set(fileIds));
+    // 直接开始清理
+    setShowConfirmDialog(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
       {/* 顶部标题栏 */}
       <div className="bg-white border-b border-gray-200 px-4 py-2">
-        <Header onOpenFileIdentifier={() => setShowFileIdentifier(true)} />
+        <Header
+          onOpenFileIdentifier={() => setShowFileIdentifier(true)}
+          onOpenChatCleaning={() => setShowChatCleaningPanel(true)}
+          onStartMainScan={handleStartScan}
+          isScanning={isScanning}
+        />
       </div>
 
       {/* 主要内容区域 */}
@@ -228,7 +247,6 @@ function App() {
                   isScanning={isScanning}
                   deepScan={deepScan}
                   scanProgress={scanProgress}
-                  onStartScan={handleStartScan}
                   onToggleDeepScan={setDeepScan}
                 />
 
@@ -282,11 +300,20 @@ function App() {
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
+        chatFileSettings={chatFileSettings}
+        onChatFileSettingsChange={setChatFileSettings}
       />
 
       <FileIdentifier
         isOpen={showFileIdentifier}
         onClose={() => setShowFileIdentifier(false)}
+      />
+
+      <ChatCleaningPanel
+        isOpen={showChatCleaningPanel}
+        onClose={() => setShowChatCleaningPanel(false)}
+        onCleanFiles={handleChatCleanFiles}
+        chatFileSettings={chatFileSettings}
       />
     </div>
   );

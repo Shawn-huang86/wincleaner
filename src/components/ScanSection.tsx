@@ -6,7 +6,6 @@ interface ScanSectionProps {
   isScanning: boolean;
   deepScan: boolean;
   scanProgress: ScanProgress;
-  onStartScan: () => void;
   onToggleDeepScan: (enabled: boolean) => void;
 }
 
@@ -14,26 +13,12 @@ export const ScanSection: React.FC<ScanSectionProps> = ({
   isScanning,
   deepScan,
   scanProgress,
-  onStartScan,
   onToggleDeepScan,
 }) => {
   return (
     <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-200">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-4">
-          <button
-            onClick={onStartScan}
-            disabled={isScanning}
-            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
-          >
-            {isScanning ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Search className="w-4 h-4" />
-            )}
-            {isScanning ? '扫描中...' : '扫描垃圾文件'}
-          </button>
-
           <div className="bg-white/70 backdrop-blur-sm rounded-lg p-2 border border-white/50">
             <label className="flex items-center gap-2 cursor-pointer text-sm">
             <input

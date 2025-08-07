@@ -38,20 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: 'bg-purple-100 text-purple-700 border-purple-200',
       description: '用户临时文件和缓存'
     },
-    { 
-      category: 'wechat', 
-      displayName: '微信清理', 
-      icon: MessageCircle, 
-      color: 'bg-green-100 text-green-700 border-green-200',
-      description: '微信聊天缓存、图片、视频等'
-    },
-    { 
-      category: 'qq', 
-      displayName: 'QQ清理', 
-      icon: Users, 
-      color: 'bg-blue-100 text-blue-700 border-blue-200',
-      description: 'QQ聊天缓存、表情、语音等'
-    },
+
     { 
       category: 'downloads', 
       displayName: '下载文件', 

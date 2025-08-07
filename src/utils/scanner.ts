@@ -1,4 +1,4 @@
-import { ScanItem, ScanProgress } from '../types';
+import { ScanItem, ScanProgress, ChatFileSettings } from '../types';
 
 const SCAN_ITEMS = [
   {
@@ -235,41 +235,101 @@ const SCAN_ITEMS = [
   }
 ];
 
+// 检查文件是否应该被时间筛选排除
+const shouldExcludeByTime = (item: any, chatSettings: ChatFileSettings): boolean => {
+  const isChatFile = item.category === 'wechat' || item.category === 'qq';
+  if (!isChatFile) return false;
+
+  // 临时文件和日志文件不受时间限制影响
+  if (item.type === '临时文件' || item.type === '日志文件') return false;
+
+  const monthsToKeep = item.category === 'wechat' ? chatSettings.wechatMonths : chatSettings.qqMonths;
+  if (monthsToKeep === 0) return false; // 不保留，清理全部
+
+  // 模拟文件时间（实际应用中应该读取真实文件时间）
+  const now = new Date();
+  const cutoffDate = new Date(now.getFullYear(), now.getMonth() - monthsToKeep, now.getDate());
+
+  // 为演示目的，随机生成一些文件时间
+  const randomDaysAgo = Math.floor(Math.random() * 365); // 0-365天前
+  const fileDate = new Date(now.getTime() - randomDaysAgo * 24 * 60 * 60 * 1000);
+
+  return fileDate > cutoffDate; // 如果文件比截止日期新，则排除（不清理）
+};
+
 export const simulateScanning = async (
   setProgress: (progress: ScanProgress) => void,
   setResults: (results: ScanItem[]) => void,
-  deepScan: boolean
+  deepScan: boolean,
+  chatSettings: ChatFileSettings = { wechatMonths: 3, qqMonths: 3 },
+  scanType: 'all' | 'chat-only' | 'exclude-chat' = 'exclude-chat'
 ): Promise<void> => {
-  const itemsToScan = SCAN_ITEMS.filter(item => !item.isDeepScan || deepScan);
+  let itemsToScan = SCAN_ITEMS.filter(item => !item.isDeepScan || deepScan);
+
+  // 根据扫描类型过滤项目
+  if (scanType === 'chat-only') {
+    // 只扫描微信QQ文件
+    itemsToScan = itemsToScan.filter(item => item.category === 'wechat' || item.category === 'qq');
+  } else if (scanType === 'exclude-chat') {
+    // 排除微信QQ文件
+    itemsToScan = itemsToScan.filter(item => item.category !== 'wechat' && item.category !== 'qq');
+  }
+  // scanType === 'all' 时不过滤
+
   const results: ScanItem[] = [];
-  
+
   for (let i = 0; i < itemsToScan.length; i++) {
     const item = itemsToScan[i];
-    
+
     setProgress({
       current: i + 1,
       total: itemsToScan.length,
       currentItem: item.name
     });
-    
+
     // Simulate scanning delay
     await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
-    
+
     // Add some randomness to make it more realistic
     if (Math.random() > 0.1) { // 90% chance to find the item
-      results.push({
-        id: `item-${i}`,
-        name: item.name,
-        path: item.path,
-        size: formatFileSize(item.sizeBytes),
-        sizeBytes: item.sizeBytes,
-        type: item.type,
-        category: item.category,
-        riskLevel: item.riskLevel,
-        suggestion: item.suggestion
-      });
+      // 检查是否应该被时间筛选排除
+      if (shouldExcludeByTime(item, chatSettings)) {
+        // 被时间筛选排除的文件，更新建议信息
+        const monthsToKeep = item.category === 'wechat' ? chatSettings.wechatMonths : chatSettings.qqMonths;
+        results.push({
+          id: `item-${i}`,
+          name: item.name,
+          path: item.path,
+          size: formatFileSize(item.sizeBytes),
+          sizeBytes: item.sizeBytes,
+          type: item.type,
+          category: item.category,
+          riskLevel: 'safe',
+          suggestion: `🛡️ 受时间保护（保留最近${monthsToKeep}个月）`,
+          lastModified: new Date(Date.now() - Math.random() * monthsToKeep * 30 * 24 * 60 * 60 * 1000),
+          isChatFile: true
+        });
+      } else {
+        // 生成随机的文件修改时间
+        const randomDaysAgo = Math.floor(Math.random() * 365);
+        const lastModified = new Date(Date.now() - randomDaysAgo * 24 * 60 * 60 * 1000);
+
+        results.push({
+          id: `item-${i}`,
+          name: item.name,
+          path: item.path,
+          size: formatFileSize(item.sizeBytes),
+          sizeBytes: item.sizeBytes,
+          type: item.type,
+          category: item.category,
+          riskLevel: item.riskLevel,
+          suggestion: item.suggestion,
+          lastModified,
+          isChatFile: item.category === 'wechat' || item.category === 'qq'
+        });
+      }
     }
-    
+
     setResults([...results]);
   }
 };
