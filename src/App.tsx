@@ -13,6 +13,8 @@ import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning } from './utils/scanner';
+import { RealScanner } from './utils/realScanner';
+import { RealCleaner } from './utils/realCleaner';
 
 function App() {
   const [isScanning, setIsScanning] = useState(false);
@@ -42,6 +44,7 @@ function App() {
   const [totalSpaceFreed, setTotalSpaceFreed] = useState(0);
   const [scanHistory, setScanHistory] = useState<Array<{date: string, itemsFound: number, spaceFreed: number}>>([]);
   const [cleaningCancelled, setCleaningCancelled] = useState(false);
+  const [useRealCleaning, setUseRealCleaning] = useState(true); // 默认使用真实清理
 
 
 
@@ -56,8 +59,19 @@ function App() {
     setSelectedCategory(null);
     setDeepScan(scanDeep);
 
-    // 主扫描排除微信QQ文件
-    await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+    try {
+      if (useRealCleaning && window.electronAPI) {
+        // 使用真实扫描器
+        await RealScanner.scanFiles(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+      } else {
+        // 使用模拟扫描器
+        await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+      }
+    } catch (error) {
+      console.error('扫描失败:', error);
+      // 如果真实扫描失败，回退到模拟扫描
+      await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+    }
 
     setIsScanning(false);
 
@@ -77,8 +91,19 @@ function App() {
     setSelectedCategory(null);
     setDeepScan(true); // 微信QQ扫描默认为深度扫描
 
-    // 只扫描微信QQ文件
-    await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
+    try {
+      if (useRealCleaning && window.electronAPI) {
+        // 使用真实扫描器
+        await RealScanner.scanFiles(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
+      } else {
+        // 使用模拟扫描器
+        await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
+      }
+    } catch (error) {
+      console.error('聊天扫描失败:', error);
+      // 如果真实扫描失败，回退到模拟扫描
+      await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
+    }
 
     setIsScanning(false);
 
@@ -180,6 +205,69 @@ function App() {
     }
 
     const totalSize = itemsToClean.reduce((sum, item) => sum + item.sizeBytes, 0);
+
+    try {
+      if (useRealCleaning && window.electronAPI) {
+        // 使用真实清理器
+        const result = await RealCleaner.cleanFiles(
+          itemsToClean,
+          (progress) => {
+            setCleaningProgress(progress);
+          },
+          (currentItem) => {
+            setCurrentCleaningItem(currentItem);
+          }
+        );
+
+        setShowCleaningProgress(false);
+        setCurrentCleaningItem(null);
+
+        if (!cleaningCancelled && result.success) {
+          // Remove successfully cleaned items from results
+          const cleanedItemIds = itemsToClean
+            .filter(item => result.deletedFiles.includes(item.path))
+            .map(item => item.id);
+
+          setScanResults(prev => prev.filter(item => !cleanedItemIds.includes(item.id)));
+          setSelectedItems(new Set());
+          setTotalSpaceFreed(result.totalSize);
+
+          // Update scan history with cleaned space
+          setScanHistory(prev => prev.map((scan, index) =>
+            index === 0 ? { ...scan, spaceFreed: result.totalSize } : scan
+          ));
+
+          setShowSuccessDialog(true);
+        }
+      } else {
+        // 使用模拟清理（原有逻辑）
+        await simulateCleaningProcess(itemsToClean, totalSize);
+      }
+    } catch (error) {
+      console.error('清理失败:', error);
+      // 如果真实清理失败，回退到模拟清理
+      await simulateCleaningProcess(itemsToClean, totalSize);
+    }
+
+    // 重置清理进度
+    setCleaningProgress({
+      current: 0,
+      total: 0,
+      currentFileName: '',
+      estimatedTimeLeft: 0,
+      totalSize: 0,
+      cleanedSize: 0
+    });
+  };
+
+  const handleCancelCleaning = () => {
+    setCleaningCancelled(true);
+    setShowCleaningProgress(false);
+    setCurrentCleaningItem(null);
+  };
+
+  // 模拟清理过程（用于非Electron环境或作为后备）
+  const simulateCleaningProcess = async (itemsToClean: ScanItem[], totalSize: number) => {
     let cleanedSize = 0;
 
     // 初始化清理进度
@@ -233,22 +321,6 @@ function App() {
 
       setShowSuccessDialog(true);
     }
-
-    // 重置清理进度
-    setCleaningProgress({
-      current: 0,
-      total: 0,
-      currentFileName: '',
-      estimatedTimeLeft: 0,
-      totalSize: 0,
-      cleanedSize: 0
-    });
-  };
-
-  const handleCancelCleaning = () => {
-    setCleaningCancelled(true);
-    setShowCleaningProgress(false);
-    setCurrentCleaningItem(null);
   };
 
 
@@ -351,6 +423,8 @@ function App() {
         onClose={() => setShowSettings(false)}
         chatFileSettings={chatFileSettings}
         onChatFileSettingsChange={setChatFileSettings}
+        useRealCleaning={useRealCleaning}
+        onUseRealCleaningChange={setUseRealCleaning}
       />
 
       <FileIdentifier

@@ -7,6 +7,8 @@ interface SettingsPanelProps {
   onClose: () => void;
   chatFileSettings: ChatFileSettingsType;
   onChatFileSettingsChange: (settings: ChatFileSettingsType) => void;
+  useRealCleaning: boolean;
+  onUseRealCleaningChange: (useReal: boolean) => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -14,6 +16,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onClose,
   chatFileSettings,
   onChatFileSettingsChange,
+  useRealCleaning,
+  onUseRealCleaningChange,
 }) => {
   const [autoScan, setAutoScan] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -48,6 +52,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <div className="space-y-4 ml-10">
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
+                  <span className="text-sm font-medium text-gray-700">启用真实清理</span>
+                  <p className="text-xs text-gray-500">
+                    {useRealCleaning
+                      ? '✅ 真正删除文件到回收站（推荐）'
+                      : '⚠️ 仅模拟清理过程（演示模式）'
+                    }
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={useRealCleaning}
+                  onChange={(e) => onUseRealCleaningChange(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              </label>
+
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
                   <span className="text-sm font-medium text-gray-700">默认启用深度扫描</span>
                   <p className="text-xs text-gray-500">包含系统文件和注册表扫描</p>
                 </div>
@@ -58,7 +80,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
               </label>
-              
+
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
                   <span className="text-sm font-medium text-gray-700">自动清理安全项</span>
