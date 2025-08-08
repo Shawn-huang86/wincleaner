@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CheckSquare, Square, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, Folder, Globe, User, Settings, Archive, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckSquare, Square, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, Folder, Globe, User, Settings, Archive, Download, ChevronLeft, ChevronRight, Brain, Star } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -85,6 +85,58 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       default:
         return <span className={`${baseClasses} text-gray-600`}>{suggestion}</span>;
     }
+  };
+
+  // 渲染AI分析结果
+  const renderAIAnalysis = (item: ScanItem) => {
+    // 检查是否有AI分析结果（通过suggestion中的特定标识判断）
+    const hasAIAnalysis = item.suggestion.includes('置信度') || item.suggestion.includes('AI建议');
+
+    if (!hasAIAnalysis) {
+      return (
+        <div className="text-xs text-gray-400 flex items-center gap-1">
+          <Brain className="w-3 h-3" />
+          <span>未分析</span>
+        </div>
+      );
+    }
+
+    // 从suggestion中提取AI信息
+    const confidenceMatch = item.suggestion.match(/置信度:\s*(\d+)%/);
+    const safetyMatch = item.suggestion.match(/安全评分:\s*(\d+)/);
+    const aiRecommendationMatch = item.suggestion.match(/AI建议:\s*([^)]+)/);
+
+    const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 0;
+    const safetyScore = safetyMatch ? parseInt(safetyMatch[1]) : 0;
+    const aiRecommendation = aiRecommendationMatch ? aiRecommendationMatch[1] : '';
+
+    const getConfidenceColor = (conf: number) => {
+      if (conf >= 80) return 'text-green-600 bg-green-100';
+      if (conf >= 60) return 'text-yellow-600 bg-yellow-100';
+      return 'text-red-600 bg-red-100';
+    };
+
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-1">
+          <Brain className="w-3 h-3 text-purple-600" />
+          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getConfidenceColor(confidence)}`}>
+            {confidence}%
+          </span>
+        </div>
+        {safetyScore > 0 && (
+          <div className="flex items-center gap-1">
+            <Star className="w-3 h-3 text-blue-600" />
+            <span className="text-xs text-gray-600">{safetyScore}/100</span>
+          </div>
+        )}
+        {aiRecommendation && (
+          <div className="text-xs text-gray-500 max-w-xs truncate" title={aiRecommendation}>
+            {aiRecommendation}
+          </div>
+        )}
+      </div>
+    );
   };
 
   // 计算选择状态 - 基于所有筛选结果，不只是当前页
@@ -206,6 +258,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">分类</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">修改时间</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">安全评估</th>
+              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">AI分析</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -262,6 +315,9 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     {getRiskIcon(item.riskLevel)}
                     {getRiskText(item.riskLevel, item.suggestion)}
                   </div>
+                </td>
+                <td className="px-4 py-3">
+                  {renderAIAnalysis(item)}
                 </td>
               </tr>
             ))}

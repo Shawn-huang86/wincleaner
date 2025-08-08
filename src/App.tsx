@@ -11,6 +11,7 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
+import { ApplicationManager } from './components/ApplicationManager';
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning } from './utils/scanner';
 import { RealScanner } from './utils/realScanner';
@@ -28,6 +29,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
+  const [showApplicationManager, setShowApplicationManager] = useState(false);
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
     qqMonths: 3
@@ -334,6 +336,7 @@ function App() {
           onStartChatScan={handleStartChatScan}
           onStartMainScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
+          onOpenApplicationManager={() => setShowApplicationManager(true)}
           isScanning={isScanning}
         />
       </div>
@@ -431,6 +434,12 @@ function App() {
         isOpen={showFileIdentifier}
         onClose={() => setShowFileIdentifier(false)}
       />
+
+      {showApplicationManager && (
+        <ApplicationManager
+          onClose={() => setShowApplicationManager(false)}
+        />
+      )}
     </div>
   );
 }

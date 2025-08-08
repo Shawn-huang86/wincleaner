@@ -9,6 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "echo 'AI功能测试需要配置Jest环境'",
+    "test:ai": "echo 'AI服务测试 - 请确保已配置API密钥'",
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build-electron": "npm run build && electron .",

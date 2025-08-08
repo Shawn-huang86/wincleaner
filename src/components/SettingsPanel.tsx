@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle } from 'lucide-react';
+import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain } from 'lucide-react';
 import { ChatFileSettings as ChatFileSettingsType } from '../types';
+import { AIConfigPanel } from './AIConfigPanel';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [notifications, setNotifications] = useState(true);
   const [deepScanDefault, setDeepScanDefault] = useState(false);
   const [autoCleanSafe, setAutoCleanSafe] = useState(false);
+  const [showAIConfig, setShowAIConfig] = useState(false);
 
   if (!isOpen) return null;
 
@@ -335,6 +337,28 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </div>
           </div>
 
+          {/* AI智能分析 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Brain className="w-5 h-5 text-purple-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">AI智能分析</h4>
+            </div>
+
+            <div className="ml-10 space-y-3">
+              <p className="text-sm text-gray-600">
+                启用AI功能可以更准确地识别文件用途和安全性，提供智能清理建议。
+              </p>
+              <button
+                onClick={() => setShowAIConfig(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              >
+                配置AI服务
+              </button>
+            </div>
+          </div>
+
           {/* 关于信息 */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -343,7 +367,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </div>
               <h4 className="text-lg font-medium text-gray-900">关于</h4>
             </div>
-            
+
             <div className="ml-10 text-sm text-gray-600 space-y-1">
               <div>WinCleaner v1.0.0</div>
               <div>智能垃圾清理工具</div>
@@ -367,6 +391,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </button>
         </div>
       </div>
+
+      {/* AI配置面板 */}
+      <AIConfigPanel
+        isOpen={showAIConfig}
+        onClose={() => setShowAIConfig(false)}
+      />
     </div>
   );
 };

@@ -1,3 +1,6 @@
+import { AIService } from '../services/aiService';
+import { AIAnalysisResult, AIAnalysisRequest } from '../types';
+
 export interface FileIdentification {
   name: string;
   type: 'file' | 'folder';
@@ -6,6 +9,7 @@ export interface FileIdentification {
   canDelete: 'safe' | 'caution' | 'dangerous' | 'never';
   reason: string;
   recommendation: string;
+  aiAnalysis?: AIAnalysisResult;
 }
 
 // 系统文件夹识别数据库
@@ -73,10 +77,53 @@ const SUSPICIOUS_PATTERNS = [
   { pattern: /\.tmp\d+$/i, desc: '编号临时文件', canDelete: 'safe', reason: '临时文件' },
 ];
 
-export const identifyFile = (filePath: string, fileName: string, isDirectory: boolean): FileIdentification => {
+export const identifyFile = async (
+  filePath: string,
+  fileName: string,
+  isDirectory: boolean,
+  fileSize?: number,
+  lastModified?: Date,
+  useAI: boolean = true
+): Promise<FileIdentification> => {
   const lowerName = fileName.toLowerCase();
   const fileExt = fileName.includes('.') ? '.' + fileName.split('.').pop()?.toLowerCase() : '';
-  
+
+  // 首先使用传统规则进行基础识别
+  const baseIdentification = identifyFileWithRules(filePath, fileName, isDirectory);
+
+  // 如果启用AI且AI服务可用，则进行AI分析
+  if (useAI && AIService.isAvailable() && fileSize !== undefined && lastModified !== undefined) {
+    try {
+      const aiRequest: AIAnalysisRequest = {
+        filePath,
+        fileName,
+        fileSize,
+        fileType: isDirectory ? 'directory' : 'file',
+        lastModified,
+        extension: fileExt,
+        parentPath: filePath.substring(0, filePath.lastIndexOf('\\'))
+      };
+
+      const aiAnalysis = await AIService.analyzeFile(aiRequest);
+      if (aiAnalysis) {
+        // 结合AI分析结果优化识别结果
+        return enhanceWithAIAnalysis(baseIdentification, aiAnalysis);
+      }
+    } catch (error) {
+      console.error('AI分析失败，使用基础识别:', error);
+    }
+  }
+
+  return baseIdentification;
+};
+
+/**
+ * 使用传统规则进行文件识别
+ */
+const identifyFileWithRules = (filePath: string, fileName: string, isDirectory: boolean): FileIdentification => {
+  const lowerName = fileName.toLowerCase();
+  const fileExt = fileName.includes('.') ? '.' + fileName.split('.').pop()?.toLowerCase() : '';
+
   // 检查系统文件夹
   if (isDirectory && SYSTEM_FOLDERS[fileName]) {
     const info = SYSTEM_FOLDERS[fileName];
@@ -104,7 +151,7 @@ export const identifyFile = (filePath: string, fileName: string, isDirectory: bo
       recommendation: getRecommendation(info.canDelete, info.reason)
     };
   }
-  
+
   // 检查系统文件
   if (!isDirectory && SYSTEM_FILES[lowerName]) {
     const info = SYSTEM_FILES[lowerName];
@@ -118,7 +165,7 @@ export const identifyFile = (filePath: string, fileName: string, isDirectory: bo
       recommendation: getRecommendation(info.canDelete, info.reason)
     };
   }
-  
+
   // 检查文件扩展名
   if (!isDirectory && fileExt && FILE_EXTENSIONS[fileExt]) {
     const info = FILE_EXTENSIONS[fileExt];
@@ -132,7 +179,7 @@ export const identifyFile = (filePath: string, fileName: string, isDirectory: bo
       recommendation: getRecommendation(info.canDelete, info.reason)
     };
   }
-  
+
   // 检查可疑模式
   if (!isDirectory) {
     for (const pattern of SUSPICIOUS_PATTERNS) {
@@ -149,13 +196,13 @@ export const identifyFile = (filePath: string, fileName: string, isDirectory: bo
       }
     }
   }
-  
+
   // 路径分析
   const pathAnalysis = analyzeFilePath(filePath, fileName, isDirectory);
   if (pathAnalysis) {
     return pathAnalysis;
   }
-  
+
   // 未知文件
   return {
     name: fileName,
@@ -166,6 +213,64 @@ export const identifyFile = (filePath: string, fileName: string, isDirectory: bo
     reason: '无法识别此文件的用途',
     recommendation: '⚠️ 建议先备份，确认不需要后再删除'
   };
+};
+
+/**
+ * 结合AI分析结果增强文件识别
+ */
+const enhanceWithAIAnalysis = (baseIdentification: FileIdentification, aiAnalysis: AIAnalysisResult): FileIdentification => {
+  const enhanced = { ...baseIdentification, aiAnalysis };
+
+  // 如果AI分析置信度高，优先使用AI的建议
+  if (aiAnalysis.confidence > 0.8) {
+    // 根据AI的风险等级调整canDelete
+    switch (aiAnalysis.riskLevel) {
+      case 'low':
+        enhanced.canDelete = 'safe';
+        break;
+      case 'medium':
+        enhanced.canDelete = 'caution';
+        break;
+      case 'high':
+        enhanced.canDelete = 'dangerous';
+        break;
+      case 'critical':
+        enhanced.canDelete = 'never';
+        break;
+    }
+
+    // 更新描述和建议
+    enhanced.description = `${baseIdentification.description} (AI: ${aiAnalysis.purpose})`;
+    enhanced.reason = aiAnalysis.recommendations.join('; ') || baseIdentification.reason;
+    enhanced.recommendation = generateEnhancedRecommendation(enhanced.canDelete, aiAnalysis);
+  } else {
+    // AI置信度较低时，保持保守策略
+    if (baseIdentification.canDelete === 'safe' && aiAnalysis.riskLevel !== 'low') {
+      enhanced.canDelete = 'caution';
+      enhanced.recommendation = '⚠️ AI分析存在不确定性，建议谨慎处理';
+    }
+  }
+
+  return enhanced;
+};
+
+/**
+ * 生成增强的推荐信息
+ */
+const generateEnhancedRecommendation = (canDelete: string, aiAnalysis: AIAnalysisResult): string => {
+  const baseRecommendation = getRecommendation(canDelete, '');
+  const aiConfidence = Math.round(aiAnalysis.confidence * 100);
+  const safetyScore = aiAnalysis.safetyScore;
+
+  let enhancedRecommendation = baseRecommendation;
+
+  if (aiAnalysis.recommendations.length > 0) {
+    enhancedRecommendation += ` (AI建议: ${aiAnalysis.recommendations[0]})`;
+  }
+
+  enhancedRecommendation += ` [置信度: ${aiConfidence}%, 安全评分: ${safetyScore}]`;
+
+  return enhancedRecommendation;
 };
 
 const analyzeFilePath = (filePath: string, fileName: string, isDirectory: boolean): FileIdentification | null => {
