@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
-import { Dashboard } from './components/Dashboard';
+import { CleaningSidebar } from './components/CleaningSidebar';
+import { SystemDashboard } from './components/SystemDashboard';
 
 import { ScanSection } from './components/ScanSection';
 import { ResultsTable } from './components/ResultsTable';
@@ -440,28 +441,32 @@ function App() {
 
       {/* 主要内容区域 */}
       <div className="flex flex-1 overflow-hidden">
-        {/* 主内容 */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* 仪表板 */}
-          <div className="p-3 bg-gray-50 border-b border-gray-200">
-            <Dashboard
-              scanResults={scanResults}
-              selectedItems={selectedItems}
-              scanHistory={scanHistory}
-              onShowSettings={() => setShowSettings(true)}
-              onStartQuickScan={() => handleStartScan(false)}
-              onStartDeepScan={() => handleStartScan(true)}
-              onStartChatScan={handleStartChatScan}
-              onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
-              onOpenApplicationManager={() => setShowApplicationManager(true)}
-              isScanning={isScanning}
-            />
-          </div>
+        {/* 左侧清理功能栏 */}
+        <CleaningSidebar
+          onStartQuickScan={() => handleStartScan(false)}
+          onStartDeepScan={() => handleStartScan(true)}
+          onStartChatScan={handleStartChatScan}
+          onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
+          onOpenApplicationManager={() => setShowApplicationManager(true)}
+          isScanning={isScanning}
+        />
 
-          {/* 扫描和结果区域 */}
-          <div className="flex-1 flex flex-col">
-            <div className="p-3">
-              <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col" style={{height: 'calc(100vh - 200px)'}}>
+        {/* 右侧内容区域 */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* 系统状态仪表盘 */}
+          <SystemDashboard
+            scanResults={scanResults}
+            selectedItems={selectedItems}
+            scanHistory={scanHistory}
+            onShowSettings={() => setShowSettings(true)}
+            isScanning={isScanning}
+          />
+
+          {/* 主内容区域 */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* 扫描和结果区域 */}
+            <div className="flex-1 flex flex-col p-4">
+              <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col h-full">
                 <ScanSection
                   isScanning={isScanning}
                   deepScan={deepScan}
