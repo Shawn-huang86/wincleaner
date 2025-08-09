@@ -59,7 +59,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="bg-blue-100 group-hover:bg-blue-200 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                 <Scan className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">快速清理</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">基础清理</h3>
               <p className="text-sm text-gray-600">清理临时文件、缓存等基础垃圾</p>
               <div className="mt-2 text-xs text-blue-600 font-medium">
                 {isScanning ? '扫描中...' : '安全 • 快速'}
@@ -77,7 +77,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="bg-purple-100 group-hover:bg-purple-200 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">深度清理</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">全面清理</h3>
               <p className="text-sm text-gray-600">系统级清理、内存优化、注册表</p>
               <div className="mt-2 text-xs text-purple-600 font-medium">
                 {isScanning ? '扫描中...' : '全面 • 高效'}
@@ -95,8 +95,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="bg-green-100 group-hover:bg-green-200 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                 <MessageCircle className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">微信QQ清理</h3>
-              <p className="text-sm text-gray-600">聊天缓存、图片视频、时间保护</p>
+              <h3 className="font-semibold text-gray-900 mb-1">聊天清理</h3>
+              <p className="text-sm text-gray-600">微信QQ缓存、图片视频、时间保护</p>
               <div className="mt-2 text-xs text-green-600 font-medium">
                 {isScanning ? '扫描中...' : '专业 • 保护'}
               </div>

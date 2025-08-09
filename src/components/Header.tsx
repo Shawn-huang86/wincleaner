@@ -9,28 +9,28 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier }) => {
   return (
     <div className="flex items-center justify-between">
       {/* 左侧标题 */}
-      <div className="flex items-center gap-2">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-2 rounded-lg">
-          <Trash2 className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-1.5">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-1.5 rounded-md">
+          <Trash2 className="w-4 h-4 text-white" />
         </div>
         <div>
           <div className="flex items-center gap-1">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               WinCleaner
             </h1>
             <div className="flex items-center gap-0.5">
-              <Sparkles className="w-3 h-3 text-blue-500" />
+              <Sparkles className="w-2.5 h-2.5 text-blue-500" />
               <span className="text-xs text-blue-600 font-medium">Pro</span>
             </div>
           </div>
-          <p className="text-xs text-gray-600">智能垃圾清理工具</p>
+          <p className="text-xs text-gray-500">智能垃圾清理工具</p>
         </div>
       </div>
 
       {/* 右侧功能区 */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* 安全标识 */}
-        <div className="hidden lg:flex items-center gap-2 text-xs text-gray-600">
+        <div className="hidden lg:flex items-center gap-1.5 text-xs text-gray-500">
           <Shield className="w-3 h-3" />
           <span>安全清理</span>
           <span className="text-gray-400">•</span>
@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier }) => {
         {/* 文件识别按钮 */}
         <button
           onClick={onOpenFileIdentifier}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-medium rounded-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-medium rounded-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
         >
           <Search className="w-3 h-3" />
           <span className="hidden sm:inline">文件识别</span>

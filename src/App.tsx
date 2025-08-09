@@ -465,7 +465,7 @@ function App() {
           {/* 主内容区域 */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* 扫描和结果区域 */}
-            <div className="flex-1 flex flex-col p-4">
+            <div className="flex-1 flex flex-col p-3">
               <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col h-full">
                 <ScanSection
                   isScanning={isScanning}

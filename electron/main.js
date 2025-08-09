@@ -140,14 +140,14 @@ function createMenu() {
       label: '工具',
       submenu: [
         {
-          label: '快速扫描',
+          label: '基础清理',
           accelerator: 'CmdOrCtrl+R',
           click: () => {
             mainWindow.webContents.send('quick-scan');
           }
         },
         {
-          label: '深度扫描',
+          label: '全面清理',
           accelerator: 'CmdOrCtrl+Shift+R',
           click: () => {
             mainWindow.webContents.send('deep-scan');

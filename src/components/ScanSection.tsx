@@ -25,15 +25,15 @@ export const ScanSection: React.FC<ScanSectionProps> = ({
         <div className="flex items-center justify-center gap-4 py-2">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Scan className="w-4 h-4 text-blue-600" />
-            <span>点击导航栏按钮开始扫描</span>
+            <span>选择清理模式开始扫描</span>
           </div>
           <div className="text-gray-400">•</div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="text-blue-600 font-medium">快速扫描</span>
+            <span className="text-blue-600 font-medium">基础清理</span>
             <span>•</span>
-            <span className="text-purple-600 font-medium">深度扫描</span>
+            <span className="text-purple-600 font-medium">全面清理</span>
             <span>•</span>
-            <span className="text-green-600 font-medium">微信QQ扫描</span>
+            <span className="text-green-600 font-medium">聊天清理</span>
           </div>
         </div>
       )}
@@ -51,17 +51,17 @@ export const ScanSection: React.FC<ScanSectionProps> = ({
                   {isChatScan ? (
                     <>
                       <MessageCircle className="w-4 h-4 text-green-600" />
-                      <span>微信QQ扫描中...</span>
+                      <span>聊天清理中...</span>
                     </>
                   ) : deepScan ? (
                     <>
                       <Zap className="w-4 h-4 text-purple-600" />
-                      <span>深度扫描中...</span>
+                      <span>全面清理中...</span>
                     </>
                   ) : (
                     <>
                       <Scan className="w-4 h-4 text-blue-600" />
-                      <span>快速扫描中...</span>
+                      <span>基础清理中...</span>
                     </>
                   )}
                 </div>
