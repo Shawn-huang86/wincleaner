@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Shield, Sparkles, Search, MessageCircle, Scan, Zap, Package } from 'lucide-react';
+import { Trash2, Shield, Sparkles, Search, MessageCircle, Scan, Zap, Package, Eraser } from 'lucide-react';
 
 interface HeaderProps {
   onOpenFileIdentifier: () => void;
@@ -7,10 +7,11 @@ interface HeaderProps {
   onStartMainScan: () => void;
   onStartDeepScan: () => void;
   onOpenApplicationManager: () => void;
+  onOpenSoftwareRemnantCleaner: () => void;
   isScanning?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartChatScan, onStartMainScan, onStartDeepScan, onOpenApplicationManager, isScanning = false }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartChatScan, onStartMainScan, onStartDeepScan, onOpenApplicationManager, onOpenSoftwareRemnantCleaner, isScanning = false }) => {
   return (
     <div className="flex items-center justify-between">
       {/* 左侧标题 */}
@@ -83,6 +84,16 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartCha
           <Package className="w-3 h-3" />
           <span className="hidden sm:inline">应用管理</span>
           <span className="sm:hidden">应用</span>
+        </button>
+
+        {/* 软件残留清理按钮 */}
+        <button
+          onClick={onOpenSoftwareRemnantCleaner}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-600 to-pink-600 text-white text-sm font-medium rounded-md hover:from-red-700 hover:to-pink-700 transition-all duration-200"
+        >
+          <Eraser className="w-3 h-3" />
+          <span className="hidden sm:inline">残留清理</span>
+          <span className="sm:hidden">残留</span>
         </button>
 
         {/* 文件识别按钮 */}

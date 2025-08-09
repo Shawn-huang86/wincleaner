@@ -84,6 +84,37 @@ export class AIService {
   }
 
   /**
+   * 分析软件残留项
+   */
+  static async analyzeSoftwareRemnant(remnant: {
+    path: string;
+    name: string;
+    type: string;
+    relatedSoftware: string;
+    size?: number;
+    lastModified?: Date;
+  }): Promise<{
+    confidence: number;
+    riskLevel: 'safe' | 'caution' | 'dangerous';
+    canDelete: boolean;
+    reason: string;
+    recommendations: string[];
+  } | null> {
+    if (!this.isAvailable()) {
+      return null;
+    }
+
+    try {
+      const prompt = this.buildRemnantAnalysisPrompt(remnant);
+      const response = await this.callAI(prompt);
+      return this.parseRemnantAnalysisResponse(response);
+    } catch (error) {
+      console.error('AI残留分析失败:', error);
+      return null;
+    }
+  }
+
+  /**
    * 批量分析文件
    */
   static async analyzeFiles(requests: AIAnalysisRequest[]): Promise<Map<string, AIAnalysisResult>> {
@@ -201,6 +232,44 @@ export class AIService {
 3. 对系统的影响程度
 4. 可能的依赖关系
 5. 使用频率估计`;
+  }
+
+  /**
+   * 构建软件残留分析提示词
+   */
+  private static buildRemnantAnalysisPrompt(remnant: {
+    path: string;
+    name: string;
+    type: string;
+    relatedSoftware: string;
+    size?: number;
+    lastModified?: Date;
+  }): string {
+    return `请分析以下软件残留项的安全性和清理建议：
+
+残留项信息：
+- 名称: ${remnant.name}
+- 路径: ${remnant.path}
+- 类型: ${remnant.type}
+- 相关软件: ${remnant.relatedSoftware}
+- 大小: ${remnant.size || 0} 字节
+- 最后修改时间: ${remnant.lastModified?.toISOString() || '未知'}
+
+请以JSON格式返回分析结果：
+{
+  "confidence": 0.95,
+  "riskLevel": "safe|caution|dangerous",
+  "canDelete": true,
+  "reason": "详细的分析原因",
+  "recommendations": ["具体的处理建议"]
+}
+
+请基于以下因素进行分析：
+1. 文件/注册表项的位置和名称
+2. 与已知软件的关联性
+3. 删除的安全性和风险
+4. 是否为真正的残留项
+5. 推荐的处理方式`;
   }
 
   /**
@@ -326,6 +395,37 @@ export class AIService {
         recommendations: ['AI分析失败，请手动检查'],
         alternativeApps: [],
         confidence: 0.1
+      };
+    }
+  }
+
+  /**
+   * 解析软件残留分析响应
+   */
+  private static parseRemnantAnalysisResponse(response: string): {
+    confidence: number;
+    riskLevel: 'safe' | 'caution' | 'dangerous';
+    canDelete: boolean;
+    reason: string;
+    recommendations: string[];
+  } {
+    try {
+      const parsed = JSON.parse(response);
+      return {
+        confidence: parsed.confidence || 0.5,
+        riskLevel: parsed.riskLevel || 'caution',
+        canDelete: parsed.canDelete !== false,
+        reason: parsed.reason || '未知原因',
+        recommendations: parsed.recommendations || []
+      };
+    } catch (error) {
+      console.error('解析AI残留分析响应失败:', error);
+      return {
+        confidence: 0.1,
+        riskLevel: 'caution',
+        canDelete: false,
+        reason: 'AI分析失败，建议手动检查',
+        recommendations: ['请手动验证此残留项的安全性']
       };
     }
   }

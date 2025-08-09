@@ -19,7 +19,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    strictPort: true
+    strictPort: false, // 允许自动选择可用端口
+    host: true // 允许外部访问
   },
   optimizeDeps: {
     exclude: ['lucide-react'],

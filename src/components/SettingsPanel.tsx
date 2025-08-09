@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain } from 'lucide-react';
+import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain, Lock } from 'lucide-react';
 import { ChatFileSettings as ChatFileSettingsType } from '../types';
 import { AIConfigPanel } from './AIConfigPanel';
+import { PermissionStatus } from './PermissionStatus';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [deepScanDefault, setDeepScanDefault] = useState(false);
   const [autoCleanSafe, setAutoCleanSafe] = useState(false);
   const [showAIConfig, setShowAIConfig] = useState(false);
+  const [showPermissionStatus, setShowPermissionStatus] = useState(false);
 
   if (!isOpen) return null;
 
@@ -337,6 +339,28 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </div>
           </div>
 
+          {/* 权限和安全 */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Lock className="w-5 h-5 text-blue-600" />
+              </div>
+              <h4 className="text-lg font-medium text-gray-900">权限和安全</h4>
+            </div>
+
+            <div className="ml-10 space-y-3">
+              <p className="text-sm text-gray-600">
+                查看应用程序的文件访问权限，了解哪些文件和文件夹可以安全访问。
+              </p>
+              <button
+                onClick={() => setShowPermissionStatus(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+              >
+                检查权限状态
+              </button>
+            </div>
+          </div>
+
           {/* AI智能分析 */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -396,6 +420,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       <AIConfigPanel
         isOpen={showAIConfig}
         onClose={() => setShowAIConfig(false)}
+      />
+
+      {/* 权限状态面板 */}
+      <PermissionStatus
+        isOpen={showPermissionStatus}
+        onClose={() => setShowPermissionStatus(false)}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
 import { ApplicationManager } from './components/ApplicationManager';
+import { SoftwareRemnantCleaner } from './components/SoftwareRemnantCleaner';
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning } from './utils/scanner';
 import { RealScanner } from './utils/realScanner';
@@ -30,6 +31,7 @@ function App() {
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
   const [showApplicationManager, setShowApplicationManager] = useState(false);
+  const [showSoftwareRemnantCleaner, setShowSoftwareRemnantCleaner] = useState(false);
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
     qqMonths: 3
@@ -337,6 +339,7 @@ function App() {
           onStartMainScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
           onOpenApplicationManager={() => setShowApplicationManager(true)}
+          onOpenSoftwareRemnantCleaner={() => setShowSoftwareRemnantCleaner(true)}
           isScanning={isScanning}
         />
       </div>
@@ -438,6 +441,13 @@ function App() {
       {showApplicationManager && (
         <ApplicationManager
           onClose={() => setShowApplicationManager(false)}
+        />
+      )}
+
+      {showSoftwareRemnantCleaner && (
+        <SoftwareRemnantCleaner
+          isOpen={showSoftwareRemnantCleaner}
+          onClose={() => setShowSoftwareRemnantCleaner(false)}
         />
       )}
     </div>
