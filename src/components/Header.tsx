@@ -8,10 +8,11 @@ interface HeaderProps {
   onStartDeepScan: () => void;
   onOpenApplicationManager: () => void;
   onOpenSoftwareRemnantCleaner: () => void;
+  onOpenAdvancedCleaner: () => void;
   isScanning?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartChatScan, onStartMainScan, onStartDeepScan, onOpenApplicationManager, onOpenSoftwareRemnantCleaner, isScanning = false }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartChatScan, onStartMainScan, onStartDeepScan, onOpenApplicationManager, onOpenSoftwareRemnantCleaner, onOpenAdvancedCleaner, isScanning = false }) => {
   return (
     <div className="flex items-center justify-between">
       {/* 左侧标题 */}
@@ -96,10 +97,20 @@ export const Header: React.FC<HeaderProps> = ({ onOpenFileIdentifier, onStartCha
           <span className="sm:hidden">残留</span>
         </button>
 
+        {/* 高级清理按钮 */}
+        <button
+          onClick={onOpenAdvancedCleaner}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all duration-200"
+        >
+          <Shield className="w-3 h-3" />
+          <span className="hidden sm:inline">高级清理</span>
+          <span className="sm:hidden">高级</span>
+        </button>
+
         {/* 文件识别按钮 */}
         <button
           onClick={onOpenFileIdentifier}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-medium rounded-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-medium rounded-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
         >
           <Search className="w-3 h-3" />
           <span className="hidden sm:inline">文件识别</span>
