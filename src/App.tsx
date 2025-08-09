@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
-import { CategoryFilter } from './components/CategoryFilter';
-import { Sidebar } from './components/Sidebar';
+
 import { ScanSection } from './components/ScanSection';
 import { ResultsTable } from './components/ResultsTable';
 import { StatusBar } from './components/StatusBar';
@@ -13,9 +12,9 @@ import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
 import { ApplicationManager } from './components/ApplicationManager';
 import { SoftwareRemnantCleaner } from './components/SoftwareRemnantCleaner';
-import { AdvancedCleaner } from './components/AdvancedCleaner';
+
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
-import { simulateScanning } from './utils/scanner';
+import { simulateScanning, formatFileSize } from './utils/scanner';
 import { RealScanner } from './utils/realScanner';
 import { RealCleaner } from './utils/realCleaner';
 
@@ -33,7 +32,7 @@ function App() {
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
   const [showApplicationManager, setShowApplicationManager] = useState(false);
   const [showSoftwareRemnantCleaner, setShowSoftwareRemnantCleaner] = useState(false);
-  const [showAdvancedCleaner, setShowAdvancedCleaner] = useState(false);
+
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
     qqMonths: 3
@@ -66,12 +65,16 @@ function App() {
     setDeepScan(scanDeep);
 
     try {
-      if (useRealCleaning && window.electronAPI) {
-        // 使用真实扫描器
-        await RealScanner.scanFiles(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+      if (scanDeep) {
+        // 深度扫描：整合高级清理功能
+        await handleDeepScanWithAdvanced();
       } else {
-        // 使用模拟扫描器
-        await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
+        // 快速扫描：只扫描基础垃圾文件
+        if (useRealCleaning && window.electronAPI) {
+          await RealScanner.scanFiles(setScanProgress, setScanResults, false, chatFileSettings, 'exclude-chat');
+        } else {
+          await simulateScanning(setScanProgress, setScanResults, false, chatFileSettings, 'exclude-chat');
+        }
       }
     } catch (error) {
       console.error('扫描失败:', error);
@@ -88,6 +91,101 @@ function App() {
       spaceFreed: 0
     };
     setScanHistory(prev => [newScan, ...prev.slice(0, 4)]);
+  };
+
+  // 深度扫描整合高级清理功能
+  const handleDeepScanWithAdvanced = async () => {
+    const allResults: ScanItem[] = [];
+
+    // 第一阶段：基础文件扫描
+    setScanProgress({
+      current: 10,
+      total: 100,
+      currentPath: '扫描基础垃圾文件...',
+      stage: 'scanning'
+    });
+
+    try {
+      if (useRealCleaning && window.electronAPI) {
+        await RealScanner.scanFiles(
+          (progress) => setScanProgress({
+            ...progress,
+            current: Math.floor(progress.current * 0.5), // 占50%进度
+          }),
+          (results) => allResults.push(...results),
+          true,
+          chatFileSettings,
+          'exclude-chat'
+        );
+      } else {
+        await simulateScanning(
+          (progress) => setScanProgress({
+            ...progress,
+            current: Math.floor(progress.current * 0.5),
+          }),
+          (results) => allResults.push(...results),
+          true,
+          chatFileSettings,
+          'exclude-chat'
+        );
+      }
+    } catch (error) {
+      console.warn('基础扫描失败，继续高级扫描:', error);
+    }
+
+    // 第二阶段：高级系统清理扫描
+    setScanProgress({
+      current: 50,
+      total: 100,
+      currentPath: '扫描系统级清理项目...',
+      stage: 'scanning'
+    });
+
+    try {
+      const { AdvancedCleanerManager } = await import('./services/advancedCleanerManager');
+      const advancedItems = await AdvancedCleanerManager.scanAllCategories(
+        undefined,
+        (progress) => setScanProgress({
+          current: 50 + Math.floor(progress.current * 0.4), // 占40%进度
+          total: 100,
+          currentPath: progress.currentPath || '扫描高级清理项目...',
+          stage: 'scanning'
+        })
+      );
+
+      // 转换高级清理项目为ScanItem格式
+      const convertedAdvancedItems: ScanItem[] = advancedItems.map((item, index) => ({
+        id: `advanced-${item.id}`,
+        name: item.name,
+        path: item.path,
+        size: formatFileSize(item.size),
+        sizeBytes: item.size,
+        type: item.category === 'system-logs' ? '系统日志' :
+              item.category === 'windows-updates' ? 'Windows更新' :
+              item.category === 'system-cache' ? '系统缓存' :
+              item.category === 'privacy-data' ? '隐私数据' :
+              item.category === 'memory-optimization' ? '内存优化' :
+              item.category === 'network-cleanup' ? '网络清理' : '系统文件',
+        category: 'system' as const,
+        riskLevel: item.riskLevel,
+        suggestion: item.description,
+        lastModified: new Date(),
+        isChatFile: false
+      }));
+
+      allResults.push(...convertedAdvancedItems);
+    } catch (error) {
+      console.warn('高级扫描失败:', error);
+    }
+
+    setScanProgress({
+      current: 100,
+      total: 100,
+      currentPath: `扫描完成，找到 ${allResults.length} 个项目`,
+      stage: 'completed'
+    });
+
+    setScanResults(allResults);
   };
 
   const handleStartChatScan = async () => {
@@ -337,27 +435,12 @@ function App() {
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <Header
           onOpenFileIdentifier={() => setShowFileIdentifier(true)}
-          onStartChatScan={handleStartChatScan}
-          onStartMainScan={() => handleStartScan(false)}
-          onStartDeepScan={() => handleStartScan(true)}
-          onOpenApplicationManager={() => setShowApplicationManager(true)}
-          onOpenSoftwareRemnantCleaner={() => setShowSoftwareRemnantCleaner(true)}
-          onOpenAdvancedCleaner={() => setShowAdvancedCleaner(true)}
-          isScanning={isScanning}
         />
       </div>
 
       {/* 主要内容区域 */}
       <div className="flex flex-1 overflow-hidden">
-        {/* 左侧边栏 */}
-        <Sidebar
-          scanResults={scanResults}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-          isScanning={isScanning}
-        />
-
-        {/* 右侧主内容 */}
+        {/* 主内容 */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* 仪表板 */}
           <div className="p-3 bg-gray-50 border-b border-gray-200">
@@ -366,6 +449,12 @@ function App() {
               selectedItems={selectedItems}
               scanHistory={scanHistory}
               onShowSettings={() => setShowSettings(true)}
+              onStartQuickScan={() => handleStartScan(false)}
+              onStartDeepScan={() => handleStartScan(true)}
+              onStartChatScan={handleStartChatScan}
+              onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
+              onOpenApplicationManager={() => setShowApplicationManager(true)}
+              isScanning={isScanning}
             />
           </div>
 
@@ -385,8 +474,10 @@ function App() {
                     results={scanResults}
                     filteredResults={filteredResults}
                     selectedItems={selectedItems}
+                    selectedCategory={selectedCategory}
                     onSelectItem={handleSelectItem}
                     onSelectAll={handleSelectAll}
+                    onCategorySelect={setSelectedCategory}
                   />
                 </div>
 
@@ -454,12 +545,7 @@ function App() {
         />
       )}
 
-      {showAdvancedCleaner && (
-        <AdvancedCleaner
-          isOpen={showAdvancedCleaner}
-          onClose={() => setShowAdvancedCleaner(false)}
-        />
-      )}
+
     </div>
   );
 }

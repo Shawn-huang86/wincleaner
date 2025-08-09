@@ -7,20 +7,78 @@ interface ResultsTableProps {
   results: ScanItem[];
   filteredResults: ScanItem[];
   selectedItems: Set<string>;
+  selectedCategory: string | null;
   onSelectItem: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onCategorySelect: (category: string | null) => void;
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
   results,
   filteredResults,
   selectedItems,
+  selectedCategory,
   onSelectItem,
   onSelectAll,
+  onCategorySelect,
 }) => {
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50; // 每页显示50项，优化性能
+
+  // 分类统计
+  const getCategoryStats = () => {
+    const categories = [
+      {
+        category: 'system',
+        displayName: '系统文件',
+        icon: Settings,
+        color: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+      },
+      {
+        category: 'browser',
+        displayName: '浏览器缓存',
+        icon: Globe,
+        color: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+      },
+      {
+        category: 'user',
+        displayName: '用户临时文件',
+        icon: User,
+        color: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200'
+      },
+      {
+        category: 'registry',
+        displayName: '注册表残留',
+        icon: Settings,
+        color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200'
+      },
+      {
+        category: 'backup',
+        displayName: '备份文件',
+        icon: Archive,
+        color: 'bg-indigo-100 text-indigo-700 border-indigo-200 hover:bg-indigo-200'
+      },
+      {
+        category: 'downloads',
+        displayName: '下载文件',
+        icon: Download,
+        color: 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200'
+      }
+    ];
+
+    return categories.map(cat => {
+      const categoryItems = results.filter(item => item.category === cat.category);
+      const totalSize = categoryItems.reduce((sum, item) => sum + item.size, 0);
+      return {
+        ...cat,
+        count: categoryItems.length,
+        totalSize
+      };
+    }).filter(cat => cat.count > 0);
+  };
+
+  const categoryStats = getCategoryStats();
 
   // 分页数据
   const paginatedResults = useMemo(() => {
@@ -209,6 +267,64 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
+      {/* 分类过滤器 */}
+      <div className="border-b border-gray-200 bg-gray-50 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <h3 className="text-sm font-medium text-gray-700">清理分类</h3>
+          <span className="text-xs text-gray-500">({results.length} 项)</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {/* 全部分类 */}
+          <button
+            onClick={() => onCategorySelect(null)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
+              selectedCategory === null
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+          >
+            <div className="flex items-center gap-1.5">
+              <Folder className="w-3 h-3" />
+              <span>全部分类</span>
+              <span className="bg-white bg-opacity-20 px-1.5 py-0.5 rounded text-xs">
+                {results.length}
+              </span>
+            </div>
+          </button>
+
+          {/* 各个分类 */}
+          {categoryStats.map((category) => {
+            const IconComponent = category.icon;
+            const isSelected = selectedCategory === category.category;
+
+            return (
+              <button
+                key={category.category}
+                onClick={() => onCategorySelect(category.category)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
+                  isSelected
+                    ? `${category.color.replace('hover:', '')} border-current shadow-sm`
+                    : `bg-white text-gray-700 border-gray-300 ${category.color.split(' ').find(c => c.startsWith('hover:'))}`
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <IconComponent className="w-3 h-3" />
+                  <span>{category.displayName}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="bg-white bg-opacity-20 px-1.5 py-0.5 rounded text-xs">
+                      {category.count}
+                    </span>
+                    <span className="text-xs opacity-75">
+                      {formatFileSize(category.totalSize)}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-auto min-h-0">
         <table className="w-full">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 sticky top-0">

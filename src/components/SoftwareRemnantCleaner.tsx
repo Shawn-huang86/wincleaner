@@ -3,17 +3,19 @@ import { X, Search, Trash2, AlertTriangle, CheckCircle, RefreshCw, Filter, Packa
 import { SoftwareRemnant, SoftwareRemnantDetector } from '../services/softwareRemnantDetector';
 import { RegistryItem, RegistryScanner } from '../services/registryScanner';
 import { ApplicationManager } from '../services/applicationManager';
+import { PrivacyItem, PrivacyCleaner } from '../services/privacyCleaner';
 
 interface SoftwareRemnantCleanerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type RemnantType = 'all' | 'file' | 'folder' | 'registry' | 'shortcut' | 'service';
+type RemnantType = 'all' | 'file' | 'folder' | 'registry' | 'shortcut' | 'service' | 'privacy';
 
 export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ isOpen, onClose }) => {
   const [remnants, setRemnants] = useState<SoftwareRemnant[]>([]);
   const [registryItems, setRegistryItems] = useState<RegistryItem[]>([]);
+  const [privacyItems, setPrivacyItems] = useState<PrivacyItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [filterType, setFilterType] = useState<RemnantType>('all');
@@ -31,35 +33,43 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
     setLoading(true);
     setRemnants([]);
     setRegistryItems([]);
+    setPrivacyItems([]);
     setSelectedItems(new Set());
 
     try {
-      // 获取已安装应用列表
+      // 第一阶段：扫描软件残留
+      setScanProgress({ current: 1, total: 3, currentItem: '扫描软件残留...' });
       const installedApps = await ApplicationManager.scanInstalledApplications();
-
-      // 扫描软件残留
       const softwareRemnants = await SoftwareRemnantDetector.scanSoftwareRemnants(
         installedApps,
-        (progress) => setScanProgress(progress)
+        (progress) => setScanProgress({ ...progress, current: 1, total: 3 })
       );
 
-      // 扫描注册表残留
+      // 第二阶段：扫描注册表残留
+      setScanProgress({ current: 2, total: 3, currentItem: '扫描注册表残留...' });
       const registryRemnants = await RegistryScanner.scanRegistryRemnants(
-        (progress) => setScanProgress(progress)
+        (progress) => setScanProgress({ ...progress, current: 2, total: 3 })
+      );
+
+      // 第三阶段：扫描隐私数据
+      setScanProgress({ current: 3, total: 3, currentItem: '扫描隐私数据...' });
+      const privacyData = await PrivacyCleaner.scanPrivacyData(
+        (progress) => setScanProgress({ current: 3, total: 3, currentItem: progress.currentPath || '扫描隐私数据...' })
       );
 
       setRemnants(softwareRemnants);
       setRegistryItems(registryRemnants);
+      setPrivacyItems(privacyData);
     } catch (error) {
-      console.error('扫描软件残留失败:', error);
+      console.error('专项清理扫描失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const getFilteredItems = () => {
-    let allItems: (SoftwareRemnant | RegistryItem)[] = [...remnants];
-    
+    let allItems: (SoftwareRemnant | RegistryItem | PrivacyItem)[] = [...remnants];
+
     // 将注册表项转换为统一格式
     const convertedRegistryItems = registryItems.map(item => ({
       ...item,
@@ -67,8 +77,17 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
       relatedSoftware: item.relatedSoftware || 'Unknown',
       size: 0
     }));
-    
+
+    // 将隐私数据项转换为统一格式
+    const convertedPrivacyItems = privacyItems.map(item => ({
+      ...item,
+      type: 'privacy' as const,
+      relatedSoftware: '系统隐私数据',
+      confidence: 0.9 // 隐私数据通常可以安全清理
+    }));
+
     allItems.push(...convertedRegistryItems);
+    allItems.push(...convertedPrivacyItems);
 
     // 类型过滤
     if (filterType !== 'all') {
@@ -86,9 +105,9 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
 
     // 推荐清理过滤
     if (showOnlyRecommended) {
-      allItems = allItems.filter(item => 
-        item.canDelete && 
-        item.confidence >= 0.7 && 
+      allItems = allItems.filter(item =>
+        item.canDelete &&
+        ('confidence' in item ? item.confidence >= 0.7 : true) &&
         item.riskLevel !== 'dangerous'
       );
     }
@@ -135,6 +154,7 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
       file: File,
       folder: Package,
       registry: Database,
+      privacy: Shield,
       shortcut: Link,
       service: Settings
     };
@@ -159,13 +179,14 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
 
   const filteredItems = getFilteredItems();
   const stats = {
-    total: remnants.length + registryItems.length,
+    total: remnants.length + registryItems.length + privacyItems.length,
     files: remnants.filter(r => r.type === 'file').length,
     folders: remnants.filter(r => r.type === 'folder').length,
     registry: registryItems.length,
+    privacy: privacyItems.length,
     shortcuts: remnants.filter(r => r.type === 'shortcut').length,
     services: remnants.filter(r => r.type === 'service').length,
-    totalSize: remnants.reduce((sum, r) => sum + (r.size || 0), 0),
+    totalSize: remnants.reduce((sum, r) => sum + (r.size || 0), 0) + privacyItems.reduce((sum, p) => sum + p.size, 0),
     canDelete: filteredItems.filter(item => item.canDelete).length
   };
 
@@ -181,8 +202,8 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">软件残留清理</h2>
-              <p className="text-gray-600 text-sm">扫描和清理软件卸载后的残留文件和注册表项</p>
+              <h2 className="text-xl font-bold text-gray-900">专项清理</h2>
+              <p className="text-gray-600 text-sm">软件残留清理和隐私数据清理工具集</p>
             </div>
           </div>
           <button
@@ -195,10 +216,10 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
 
         {/* 统计信息 */}
         <div className="p-6 border-b bg-gray-50">
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-              <div className="text-sm text-gray-600">总残留项</div>
+              <div className="text-sm text-gray-600">总项目</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{stats.files}</div>
@@ -210,7 +231,11 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">{stats.registry}</div>
-              <div className="text-sm text-gray-600">注册表项</div>
+              <div className="text-sm text-gray-600">注册表</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-pink-600">{stats.privacy}</div>
+              <div className="text-sm text-gray-600">隐私数据</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-indigo-600">{stats.shortcuts}</div>
@@ -252,6 +277,7 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
               <option value="file">文件</option>
               <option value="folder">文件夹</option>
               <option value="registry">注册表</option>
+              <option value="privacy">隐私数据</option>
               <option value="shortcut">快捷方式</option>
               <option value="service">服务</option>
             </select>
@@ -296,8 +322,8 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
             {filteredItems.length === 0 ? (
               <div className="p-8 text-center">
                 <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">没有发现软件残留</h3>
-                <p className="text-gray-500">您的系统很干净，没有发现需要清理的软件残留项。</p>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">没有发现需要清理的项目</h3>
+                <p className="text-gray-500">您的系统很干净，没有发现需要清理的软件残留或隐私数据。</p>
               </div>
             ) : (
               <div className="p-6">

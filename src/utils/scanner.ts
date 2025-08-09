@@ -335,7 +335,7 @@ export const simulateScanning = async (
 };
 
 // Helper function to format file sizes
-const formatFileSize = (bytes: number): string => {
+export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return 'N/A';
 
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];

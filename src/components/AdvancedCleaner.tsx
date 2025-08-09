@@ -136,6 +136,12 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
     setSelectedItems(newSelection);
   };
 
+  const selectAllItems = () => {
+    const allItems = getFilteredItems().filter(item => item.canDelete);
+    const allItemIds = new Set(allItems.map(item => item.id));
+    setSelectedItems(allItemIds);
+  };
+
   const clearSelection = () => {
     setSelectedItems(new Set());
   };
@@ -284,19 +290,19 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
             </button>
 
             <button
+              onClick={selectAllItems}
+              disabled={loading || cleaning}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              全选
+            </button>
+
+            <button
               onClick={selectAllSafeItems}
               disabled={loading || cleaning}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
               选择安全项
-            </button>
-
-            <button
-              onClick={clearSelection}
-              disabled={selectedCount === 0 || loading || cleaning}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-            >
-              清除选择
             </button>
           </div>
 
