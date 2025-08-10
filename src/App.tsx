@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { CleaningSidebar } from './components/CleaningSidebar';
 import { SystemDashboard } from './components/SystemDashboard';
 
-import { ScanSection } from './components/ScanSection';
 import { ResultsTable } from './components/ResultsTable';
 import { StatusBar } from './components/StatusBar';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -49,10 +48,36 @@ function App() {
   const [currentCleaningItem, setCurrentCleaningItem] = useState<ScanItem | null>(null);
   const [totalSpaceFreed, setTotalSpaceFreed] = useState(0);
   const [scanHistory, setScanHistory] = useState<Array<{date: string, itemsFound: number, spaceFreed: number}>>([]);
+
+  // 用于测量右侧内容区域高度
+  const rightContentRef = useRef<HTMLDivElement>(null);
+  const [availableHeight, setAvailableHeight] = useState<number | undefined>(undefined);
   const [cleaningCancelled, setCleaningCancelled] = useState(false);
   const [useRealCleaning, setUseRealCleaning] = useState(true); // 默认使用真实清理
 
+  // 测量右侧内容区域高度
+  useEffect(() => {
+    const measureHeight = () => {
+      if (rightContentRef.current) {
+        const rect = rightContentRef.current.getBoundingClientRect();
+        setAvailableHeight(rect.height);
+      }
+    };
 
+    // 初始测量
+    measureHeight();
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', measureHeight);
+
+    // 监听扫描状态变化，重新测量
+    const timer = setTimeout(measureHeight, 100);
+
+    return () => {
+      window.removeEventListener('resize', measureHeight);
+      clearTimeout(timer);
+    };
+  }, [scanResults.length, isScanning]); // 依赖扫描结果和状态
 
   // 根据选中的分类过滤结果
   const filteredResults = selectedCategory
@@ -436,11 +461,31 @@ function App() {
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <Header
           onOpenFileIdentifier={() => setShowFileIdentifier(true)}
+          onStartQuickScan={() => handleStartScan(false)}
+          onStartDeepScan={() => handleStartScan(true)}
+          onStartChatScan={handleStartChatScan}
+          onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
+          onOpenApplicationManager={() => setShowApplicationManager(true)}
+          isScanning={isScanning}
+          deepScan={deepScan}
+          scanProgress={scanProgress}
+          scanResults={scanResults}
         />
       </div>
 
-      {/* 主要内容区域 */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* 系统状态仪表盘 - 独立区域，不影响左右对齐 */}
+      <div className="flex-shrink-0">
+        <SystemDashboard
+          scanResults={scanResults}
+          selectedItems={selectedItems}
+          scanHistory={scanHistory}
+          onShowSettings={() => setShowSettings(true)}
+          isScanning={isScanning}
+        />
+      </div>
+
+      {/* 主要内容区域 - 左右两侧完全对称，确保底部对齐 */}
+      <div className="flex flex-1 overflow-hidden items-stretch">
         {/* 左侧清理功能栏 */}
         <CleaningSidebar
           onStartQuickScan={() => handleStartScan(false)}
@@ -451,49 +496,33 @@ function App() {
           isScanning={isScanning}
         />
 
-        {/* 右侧内容区域 */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* 系统状态仪表盘 */}
-          <SystemDashboard
-            scanResults={scanResults}
-            selectedItems={selectedItems}
-            scanHistory={scanHistory}
-            onShowSettings={() => setShowSettings(true)}
-            isScanning={isScanning}
-          />
+        {/* 右侧内容区域 - 与左侧完全对称 */}
+        <div className="flex-1 flex flex-col">
+          {/* 主内容区域 - 使用flex-1占据剩余空间，确保StatusBar固定在底部 */}
+          <div ref={rightContentRef} className="flex flex-col flex-1">
+            {/* 扫描和结果区域 - 占据剩余空间 */}
+            <div className="flex-1 p-3 pb-0 overflow-hidden">
+              <ResultsTable
+                results={scanResults}
+                filteredResults={filteredResults}
+                selectedItems={selectedItems}
+                selectedCategory={selectedCategory}
+                onSelectItem={handleSelectItem}
+                onSelectAll={handleSelectAll}
+                onCategorySelect={setSelectedCategory}
+                availableHeight={availableHeight}
+              />
+            </div>
 
-          {/* 主内容区域 */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* 扫描和结果区域 */}
-            <div className="flex-1 flex flex-col p-3">
-              <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col h-full">
-                <ScanSection
-                  isScanning={isScanning}
-                  deepScan={deepScan}
-                  scanProgress={scanProgress}
-                  scanResults={scanResults}
-                />
-
-                <div className="flex-1 flex flex-col min-h-0">
-                  <ResultsTable
-                    results={scanResults}
-                    filteredResults={filteredResults}
-                    selectedItems={selectedItems}
-                    selectedCategory={selectedCategory}
-                    onSelectItem={handleSelectItem}
-                    onSelectAll={handleSelectAll}
-                    onCategorySelect={setSelectedCategory}
-                  />
-                </div>
-
-                <StatusBar
-                  scanResults={filteredResults}
-                  selectedItems={selectedItems}
-                  totalSelectedSize={getTotalSelectedSize()}
-                  cleaningProgress={{ current: 0, total: 0 }}
-                  onCleanSelected={handleCleanSelected}
-                />
-              </div>
+            {/* 底部状态栏 - 固定在底部，与左侧完美对齐 */}
+            <div className="flex-shrink-0">
+              <StatusBar
+                scanResults={filteredResults}
+                selectedItems={selectedItems}
+                totalSelectedSize={getTotalSelectedSize()}
+                cleaningProgress={{ current: 0, total: 0 }}
+                onCleanSelected={handleCleanSelected}
+              />
             </div>
           </div>
         </div>

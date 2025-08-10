@@ -133,6 +133,18 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
           </div>
         </button>
       </div>
+
+      {/* 底部状态栏 */}
+      <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2.5 h-[45px]">
+        <div className="flex items-center justify-between h-full">
+          <div className="text-xs text-gray-700">
+            <span className="font-medium">清理功能</span>
+          </div>
+          <div className="text-xs text-gray-500">
+            {isScanning ? '扫描中...' : '就绪'}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

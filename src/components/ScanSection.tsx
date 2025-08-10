@@ -21,19 +21,19 @@ export const ScanSection: React.FC<ScanSectionProps> = ({
   return (
     <div className="p-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-b border-gray-200">
       {/* 扫描状态指示 */}
-      {!isScanning && (
-        <div className="flex items-center justify-center gap-4 py-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Scan className="w-4 h-4 text-blue-600" />
-            <span>选择清理模式开始扫描</span>
+      {!isScanning && scanResults.length === 0 && (
+        <div className="flex items-center justify-center py-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Scan className="w-4 h-4 text-gray-400" />
+            <span>点击导航栏中的清理按钮开始扫描</span>
           </div>
-          <div className="text-gray-400">•</div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="text-blue-600 font-medium">基础清理</span>
-            <span>•</span>
-            <span className="text-purple-600 font-medium">全面清理</span>
-            <span>•</span>
-            <span className="text-green-600 font-medium">聊天清理</span>
+        </div>
+      )}
+
+      {!isScanning && scanResults.length > 0 && (
+        <div className="flex items-center justify-center py-2">
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <span>✓ 扫描完成，发现 {scanResults.length} 个可清理项目</span>
           </div>
         </div>
       )}
