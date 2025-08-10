@@ -11,6 +11,7 @@ interface HeaderProps {
   onOpenApplicationManager: () => void;
   isScanning: boolean;
   deepScan: boolean;
+  isChatScan: boolean;
   scanProgress: ScanProgress;
   scanResults: any[];
 }
@@ -24,12 +25,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenApplicationManager,
   isScanning,
   deepScan,
+  isChatScan,
   scanProgress,
   scanResults
 }) => {
-  // 检测是否为微信QQ扫描
-  const isChatScan = scanResults.some(item => item.category === 'wechat' || item.category === 'qq') &&
-                     scanResults.every(item => item.category === 'wechat' || item.category === 'qq');
   return (
     <div className="space-y-3">
       {/* 主导航栏 */}
@@ -131,90 +130,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 扫描进度区域 */}
-      {isScanning && (
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-lg p-2.5 border border-blue-200/50">
-          <div className="bg-white/80 backdrop-blur-sm rounded-md p-2.5 border border-white/60">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <div className="w-3.5 h-3.5 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3.5 h-3.5 bg-blue-400 rounded-full animate-ping opacity-75"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-gray-800 flex items-center gap-1.5">
-                    {isChatScan ? (
-                      <>
-                        <MessageCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                        <span>聊天清理中</span>
-                      </>
-                    ) : deepScan ? (
-                      <>
-                        <Zap className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
-                        <span>全面清理中</span>
-                      </>
-                    ) : (
-                      <>
-                        <Scan className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                        <span>基础清理中</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-600 truncate">
-                    {scanProgress.currentItem}
-                  </div>
-                </div>
-              </div>
-              <div className="text-sm font-medium text-gray-700 flex-shrink-0 ml-2">
-                {scanProgress.current} / {scanProgress.total}
-              </div>
-            </div>
 
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>进度</span>
-                <span>{scanProgress.total > 0 ? Math.round((scanProgress.current / scanProgress.total) * 100) : 0}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    isChatScan
-                      ? 'bg-gradient-to-r from-green-500 to-blue-500'
-                      : deepScan
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500'
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-500'
-                  }`}
-                  style={{
-                    width: `${scanProgress.total > 0 ? (scanProgress.current / scanProgress.total) * 100 : 0}%`
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* 扫描状态提示 */}
-      {!isScanning && scanResults.length === 0 && (
-        <div className="bg-gray-50 rounded-md p-2 border border-gray-200">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Scan className="w-3.5 h-3.5 text-gray-400" />
-              <span>点击上方清理按钮开始扫描</span>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {!isScanning && scanResults.length > 0 && (
-        <div className="bg-green-50 rounded-md p-2 border border-green-200">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <span>✓ 扫描完成，发现 {scanResults.length} 个可清理项目</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -25,6 +25,7 @@ function App() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [deepScan, setDeepScan] = useState(false);
+  const [isChatScan, setIsChatScan] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -85,6 +86,7 @@ function App() {
     : scanResults;
   const handleStartScan = async (scanDeep: boolean = deepScan) => {
     setIsScanning(true);
+    setIsChatScan(false);
     setScanResults([]);
     setSelectedItems(new Set());
     setSelectedCategory(null);
@@ -216,6 +218,7 @@ function App() {
 
   const handleStartChatScan = async () => {
     setIsScanning(true);
+    setIsChatScan(true);
     setScanResults([]);
     setSelectedItems(new Set());
     setSelectedCategory(null);
@@ -236,6 +239,7 @@ function App() {
     }
 
     setIsScanning(false);
+    setIsChatScan(false);
 
     // Add to scan history
     const newScan = {
@@ -468,6 +472,7 @@ function App() {
           onOpenApplicationManager={() => setShowApplicationManager(true)}
           isScanning={isScanning}
           deepScan={deepScan}
+          isChatScan={isChatScan}
           scanProgress={scanProgress}
           scanResults={scanResults}
         />
@@ -481,6 +486,9 @@ function App() {
           scanHistory={scanHistory}
           onShowSettings={() => setShowSettings(true)}
           isScanning={isScanning}
+          scanProgress={scanProgress}
+          isChatScan={isChatScan}
+          deepScan={deepScan}
         />
       </div>
 
