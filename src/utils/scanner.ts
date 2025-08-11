@@ -270,6 +270,7 @@ export const simulateScanning = async (
   if (scanType === 'chat-only') {
     // 只扫描微信QQ文件
     itemsToScan = itemsToScan.filter(item => item.category === 'wechat' || item.category === 'qq');
+    console.log('聊天扫描模式，过滤后的项目数量:', itemsToScan.length);
   } else if (scanType === 'exclude-chat') {
     // 排除微信QQ文件
     itemsToScan = itemsToScan.filter(item => item.category !== 'wechat' && item.category !== 'qq');

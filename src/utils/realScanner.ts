@@ -61,8 +61,14 @@ export class RealScanner {
         stage: 'completed'
       });
 
-      // 设置结果
-      setResults(scanItems);
+      // 逐个设置结果以实现逐个呈现效果
+      const results: ScanItem[] = [];
+      for (const item of scanItems) {
+        results.push(item);
+        setResults([...results]);
+        // 添加小延迟以显示逐个呈现效果
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
 
       setProgress({
         current: 100,

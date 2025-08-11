@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download } from 'lucide-react';
+import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -10,6 +10,7 @@ interface ResultsTableProps {
   selectedCategory: string | null;
   onSelectItem: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onSelectCategory: (category: string) => void;
   onCategorySelect: (category: string | null) => void;
   availableHeight?: number; // 可用高度，用于动态调整卡片尺寸
 }
@@ -21,6 +22,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   selectedCategory,
   onSelectItem,
   onSelectAll,
+  onSelectCategory,
   onCategorySelect,
   availableHeight,
 }) => {
@@ -63,11 +65,23 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         displayName: '下载文件',
         icon: Download,
         color: 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200'
+      },
+      {
+        category: 'wechat',
+        displayName: '微信文件',
+        icon: MessageCircle,
+        color: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+      },
+      {
+        category: 'qq',
+        displayName: 'QQ文件',
+        icon: MessageCircle,
+        color: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
       }
     ];
 
     return categories.map(cat => {
-      const categoryItems = results.filter(item => item.category === cat.category);
+      const categoryItems = filteredResults.filter(item => item.category === cat.category);
       const totalSize = categoryItems.reduce((sum, item) => sum + item.size, 0);
       return {
         ...cat,
@@ -256,6 +270,19 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                       <div className="text-xs font-bold text-gray-900">
                         {formatFileSize(category.totalSize)}
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelectCategory(category.category);
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 transition-colors ml-1"
+                      >
+                        {(() => {
+                          const totalCategoryItems = results.filter(item => item.category === category.category).length;
+                          return selectedCount === totalCategoryItems ? '✓' : selectedCount > 0 ? selectedCount.toString() : '○';
+                        })()}
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -275,14 +302,17 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                         {formatFileSize(category.totalSize)}
                       </div>
                       <button
-                        onClick={() => {
-                          const categoryItems = results.filter(item => item.category === category.category);
-                          const allSelected = categoryItems.every(item => selectedItems.has(item.id));
-                          categoryItems.forEach(item => onSelectItem(item.id, !allSelected));
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelectCategory(category.category);
                         }}
                         className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
                       >
-                        {selectedCount === category.count ? '已全选' : selectedCount > 0 ? `已选${selectedCount}` : '选择'}
+                        {(() => {
+                          const totalCategoryItems = results.filter(item => item.category === category.category).length;
+                          return selectedCount === totalCategoryItems ? '已全选' : selectedCount > 0 ? `已选${selectedCount}` : '选择';
+                        })()}
                       </button>
                     </div>
                   </div>
@@ -298,22 +328,26 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                       </div>
 
                       <button
-                        onClick={() => {
-                          const categoryItems = results.filter(item => item.category === category.category);
-                          const allSelected = categoryItems.every(item => selectedItems.has(item.id));
-                          categoryItems.forEach(item => onSelectItem(item.id, !allSelected));
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelectCategory(category.category);
                         }}
                         className="flex items-center gap-1 text-xs text-gray-600 hover:text-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50 border border-gray-200 hover:border-blue-200"
                       >
-                        {selectedCount === category.count ? (
-                          <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
-                        ) : selectedCount > 0 ? (
-                          <div className="w-3.5 h-3.5 bg-blue-600 rounded border border-blue-600 relative">
-                            <div className="absolute inset-0.5 bg-white rounded-sm" />
-                          </div>
-                        ) : (
-                          <Square className="w-3.5 h-3.5" />
-                        )}
+                        {(() => {
+                          const totalCategoryItems = results.filter(item => item.category === category.category).length;
+                          const isFullySelected = selectedCount === totalCategoryItems;
+                          return isFullySelected ? (
+                            <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
+                          ) : selectedCount > 0 ? (
+                            <div className="w-3.5 h-3.5 bg-blue-600 rounded border border-blue-600 relative">
+                              <div className="absolute inset-0.5 bg-white rounded-sm" />
+                            </div>
+                          ) : (
+                            <Square className="w-3.5 h-3.5" />
+                          );
+                        })()}
                         <span className="font-medium">
                           {selectedCount > 0 ? `已选择 ${selectedCount}` : '全选'}
                         </span>

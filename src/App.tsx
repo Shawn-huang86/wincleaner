@@ -140,7 +140,10 @@ function App() {
             ...progress,
             current: Math.floor(progress.current * 0.5), // 占50%进度
           }),
-          (results) => allResults.push(...results),
+          (results) => {
+            allResults.push(...results);
+            setScanResults([...allResults]); // 逐个呈现
+          },
           true,
           chatFileSettings,
           'exclude-chat'
@@ -151,7 +154,10 @@ function App() {
             ...progress,
             current: Math.floor(progress.current * 0.5),
           }),
-          (results) => allResults.push(...results),
+          (results) => {
+            allResults.push(...results);
+            setScanResults([...allResults]); // 逐个呈现
+          },
           true,
           chatFileSettings,
           'exclude-chat'
@@ -181,27 +187,32 @@ function App() {
         })
       );
 
-      // 转换高级清理项目为ScanItem格式
-      const convertedAdvancedItems: ScanItem[] = advancedItems.map((item, index) => ({
-        id: `advanced-${item.id}`,
-        name: item.name,
-        path: item.path,
-        size: formatFileSize(item.size),
-        sizeBytes: item.size,
-        type: item.category === 'system-logs' ? '系统日志' :
-              item.category === 'windows-updates' ? 'Windows更新' :
-              item.category === 'system-cache' ? '系统缓存' :
-              item.category === 'privacy-data' ? '隐私数据' :
-              item.category === 'memory-optimization' ? '内存优化' :
-              item.category === 'network-cleanup' ? '网络清理' : '系统文件',
-        category: 'system' as const,
-        riskLevel: item.riskLevel,
-        suggestion: item.description,
-        lastModified: new Date(),
-        isChatFile: false
-      }));
+      // 转换高级清理项目为ScanItem格式并逐个添加
+      for (const item of advancedItems) {
+        const convertedItem: ScanItem = {
+          id: `advanced-${item.id}`,
+          name: item.name,
+          path: item.path,
+          size: formatFileSize(item.size),
+          sizeBytes: item.size,
+          type: item.category === 'system-logs' ? '系统日志' :
+                item.category === 'windows-updates' ? 'Windows更新' :
+                item.category === 'system-cache' ? '系统缓存' :
+                item.category === 'privacy-data' ? '隐私数据' :
+                item.category === 'memory-optimization' ? '内存优化' :
+                item.category === 'network-cleanup' ? '网络清理' : '系统文件',
+          category: 'system' as const,
+          riskLevel: item.riskLevel,
+          suggestion: item.description,
+          lastModified: new Date(),
+          isChatFile: false
+        };
 
-      allResults.push(...convertedAdvancedItems);
+        allResults.push(convertedItem);
+        setScanResults([...allResults]); // 逐个呈现
+        // 添加小延迟以显示逐个呈现效果
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
     } catch (error) {
       console.warn('高级扫描失败:', error);
     }
@@ -213,10 +224,11 @@ function App() {
       stage: 'completed'
     });
 
-    setScanResults(allResults);
+    // 结果已经在循环中逐个设置，无需再次设置
   };
 
   const handleStartChatScan = async () => {
+    console.log('开始聊天扫描...');
     setIsScanning(true);
     setIsChatScan(true);
     setScanResults([]);
@@ -225,29 +237,31 @@ function App() {
     setDeepScan(true); // 微信QQ扫描默认为深度扫描
 
     try {
-      if (useRealCleaning && window.electronAPI) {
-        // 使用真实扫描器
-        await RealScanner.scanFiles(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
-      } else {
-        // 使用模拟扫描器
-        await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
-      }
+      console.log('使用模拟扫描器进行聊天扫描');
+      // 直接使用模拟扫描器 - 已经支持逐个呈现
+      await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
     } catch (error) {
       console.error('聊天扫描失败:', error);
-      // 如果真实扫描失败，回退到模拟扫描
+      // 如果扫描失败，重试一次
+      console.log('重试聊天扫描');
       await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
     }
 
     setIsScanning(false);
-    setIsChatScan(false);
+    // 不要立即设置 isChatScan 为 false，让它保持为 true 以便正确显示
+    // setIsChatScan(false);
 
-    // Add to scan history
-    const newScan = {
-      date: new Date().toLocaleDateString('zh-CN'),
-      itemsFound: scanResults.length,
-      spaceFreed: 0
-    };
-    setScanHistory(prev => [newScan, ...prev.slice(0, 4)]);
+    // 延迟一下再更新扫描历史，确保 scanResults 已经更新
+    setTimeout(() => {
+      console.log('聊天扫描完成，结果数量:', scanResults.length);
+      // Add to scan history
+      const newScan = {
+        date: new Date().toLocaleDateString('zh-CN'),
+        itemsFound: scanResults.length,
+        spaceFreed: 0
+      };
+      setScanHistory(prev => [newScan, ...prev.slice(0, 4)]);
+    }, 100);
   };
 
   const handleSelectItem = (id: string, selected: boolean) => {
@@ -270,6 +284,25 @@ function App() {
       // 只移除当前筛选结果中的项目，保留其他分类中的选择
       filteredResults.forEach(item => newSelected.delete(item.id));
     }
+
+    setSelectedItems(newSelected);
+  };
+
+  // 批量选择分类中的所有项目
+  const handleSelectCategory = (category: string) => {
+    const categoryItems = scanResults.filter(item => item.category === category);
+    const allSelected = categoryItems.every(item => selectedItems.has(item.id));
+
+    const newSelected = new Set(selectedItems);
+    const targetState = !allSelected;
+
+    categoryItems.forEach(item => {
+      if (targetState) {
+        newSelected.add(item.id);
+      } else {
+        newSelected.delete(item.id);
+      }
+    });
 
     setSelectedItems(newSelected);
   };
@@ -517,6 +550,7 @@ function App() {
                 selectedCategory={selectedCategory}
                 onSelectItem={handleSelectItem}
                 onSelectAll={handleSelectAll}
+                onSelectCategory={handleSelectCategory}
                 onCategorySelect={setSelectedCategory}
                 availableHeight={availableHeight}
               />
