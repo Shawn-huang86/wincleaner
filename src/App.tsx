@@ -572,6 +572,7 @@ function App() {
                 onSelectCategory={handleSelectCategory}
                 onCategorySelect={setSelectedCategory}
                 availableHeight={availableHeight}
+                onCleanSelected={handleCleanSelected}
               />
             </div>
 
@@ -582,7 +583,6 @@ function App() {
                 selectedItems={selectedItems}
                 totalSelectedSize={getTotalSelectedSize()}
                 cleaningProgress={{ current: 0, total: 0 }}
-                onCleanSelected={handleCleanSelected}
               />
             </div>
           </div>

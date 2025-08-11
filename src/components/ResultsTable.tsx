@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle } from 'lucide-react';
+import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle, Trash2 } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -13,6 +13,7 @@ interface ResultsTableProps {
   onSelectCategory: (category: string) => void;
   onCategorySelect: (category: string | null) => void;
   availableHeight?: number; // 可用高度，用于动态调整卡片尺寸
+  onCleanSelected?: () => void; // 新增：清理选中项的回调函数
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -25,6 +26,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   onSelectCategory,
   onCategorySelect,
   availableHeight,
+  onCleanSelected
 }) => {
 
   // 分类统计
@@ -196,12 +198,34 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     );
   }
 
+  // 计算选中项的总数和总大小
+  const selectedCount = selectedItems.size;
+  const selectedSize = results
+    .filter(item => selectedItems.has(item.id))
+    .reduce((total, item) => total + item.size, 0);
+
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col h-full">
-      {/* 调试信息 - 开发时显示 */}
-      {availableHeight && process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-gray-500 p-2 bg-yellow-50 border-b">
-          高度: {availableHeight}px | 模式: {gridConfig.isCompact ? '紧凑' : '正常'} | 卡片: {gridConfig.cardHeight}
+      {/* 头部区域 - 包含清理按钮 */}
+      {results.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900">扫描结果</h3>
+            <span className="text-sm text-gray-500">
+              共 {results.length} 项，{formatFileSize(results.reduce((total, item) => total + item.size, 0))}
+            </span>
+          </div>
+
+          {onCleanSelected && (
+            <button
+              onClick={onCleanSelected}
+              disabled={selectedCount === 0}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-lg hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              <Trash2 className="w-4 h-4" />
+              清理选中项 {selectedCount > 0 && `(${selectedCount})`}
+            </button>
+          )}
         </div>
       )}
 
