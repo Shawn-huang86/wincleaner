@@ -14,6 +14,7 @@ interface ResultsTableProps {
   onCategorySelect: (category: string | null) => void;
   availableHeight?: number; // 可用高度，用于动态调整卡片尺寸
   onCleanSelected?: () => void; // 新增：清理选中项的回调函数
+  onBatchSelect?: (ids: string[], selected: boolean) => void; // 新增：批量选择回调函数
 }
 
 export const ResultsTable: React.FC<ResultsTableProps> = ({
@@ -26,7 +27,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   onSelectCategory,
   onCategorySelect,
   availableHeight,
-  onCleanSelected
+  onCleanSelected,
+  onBatchSelect
 }) => {
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
@@ -270,21 +272,72 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           </div>
 
           {onCleanSelected && (
-            <button
-              onClick={onCleanSelected}
-              disabled={selectedCount === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-lg hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <Trash2 className="w-4 h-4" />
-              {(() => {
-                // 检查是否包含应用类别
-                const hasApplications = results.some(item => item.category === 'application');
-                if (hasApplications && results.every(item => item.category === 'application')) {
-                  return `卸载选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
-                }
-                return `清理选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
-              })()}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* 全选按钮 */}
+              <button
+                onClick={() => {
+                  const isAppMode = results.length > 0 && results.every(item => item.category === 'application');
+
+                  if (isAppMode && onBatchSelect) {
+                    // 应用管理模式：全选所有页面的可卸载应用
+                    // 获取所有可删除的应用（不限于当前页面）
+                    const allDeletableItems = filteredResults.filter(item => item.canDelete !== false);
+                    const allDeletableSelected = allDeletableItems.every(item => selectedItems.has(item.id));
+
+                    // 使用批量选择函数选中所有可删除的应用
+                    const itemIds = allDeletableItems.map(item => item.id);
+                    onBatchSelect(itemIds, !allDeletableSelected);
+                  } else if (isAppMode) {
+                    // 应用管理模式但没有批量选择函数，回退到逐个选择
+                    const allDeletableItems = filteredResults.filter(item => item.canDelete !== false);
+                    const allDeletableSelected = allDeletableItems.every(item => selectedItems.has(item.id));
+
+                    allDeletableItems.forEach((item, index) => {
+                      setTimeout(() => {
+                        onSelectItem(item.id, !allDeletableSelected);
+                      }, index * 10);
+                    });
+                  } else {
+                    // 普通模式（全面清理、聊天清理等）：基于可删除项目的选择状态
+                    const allDeletableItems = filteredResults.filter(item => item.canDelete !== false);
+                    const selectedDeletableCount = allDeletableItems.filter(item => selectedItems.has(item.id)).length;
+                    const allDeletableSelected = allDeletableItems.length > 0 && selectedDeletableCount === allDeletableItems.length;
+
+                    onSelectAll(!allDeletableSelected);
+                  }
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+              >
+                <CheckSquare className="w-4 h-4" />
+                {(() => {
+                  const isAppMode = results.length > 0 && results.every(item => item.category === 'application');
+
+                  // 统一的逻辑：基于可删除项目的选择状态
+                  const allDeletableItems = filteredResults.filter(item => item.canDelete !== false);
+                  const selectedDeletableCount = allDeletableItems.filter(item => selectedItems.has(item.id)).length;
+                  const allDeletableSelected = allDeletableItems.length > 0 && selectedDeletableCount === allDeletableItems.length;
+
+                  return allDeletableSelected ? '取消全选' : '全选';
+                })()}
+              </button>
+
+              {/* 清理选中项按钮 */}
+              <button
+                onClick={onCleanSelected}
+                disabled={selectedCount === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-lg hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                <Trash2 className="w-4 h-4" />
+                {(() => {
+                  // 检查是否包含应用类别
+                  const hasApplications = results.some(item => item.category === 'application');
+                  if (hasApplications && results.every(item => item.category === 'application')) {
+                    return `卸载选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
+                  }
+                  return `清理选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
+                })()}
+              </button>
+            </div>
           )}
         </div>
       )}

@@ -527,6 +527,19 @@ function App() {
     setSelectedItems(newSelected);
   };
 
+  // 批量选择函数
+  const handleBatchSelect = (ids: string[], selected: boolean) => {
+    const newSelected = new Set(selectedItems);
+    ids.forEach(id => {
+      if (selected) {
+        newSelected.add(id);
+      } else {
+        newSelected.delete(id);
+      }
+    });
+    setSelectedItems(newSelected);
+  };
+
   const handleSelectAll = (selected: boolean) => {
     const newSelected = new Set(selectedItems);
 
@@ -820,6 +833,7 @@ function App() {
                 onCategorySelect={setSelectedCategory}
                 availableHeight={availableHeight}
                 onCleanSelected={handleCleanSelected}
+                onBatchSelect={handleBatchSelect}
               />
             </div>
 
