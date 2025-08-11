@@ -84,11 +84,15 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
     return categories.map(cat => {
       const categoryItems = filteredResults.filter(item => item.category === cat.category);
+      const deletableItems = categoryItems.filter(item => item.canDelete !== false);
       const totalSize = categoryItems.reduce((sum, item) => sum + item.size, 0);
+      const deletableSize = deletableItems.reduce((sum, item) => sum + item.size, 0);
       return {
         ...cat,
         count: categoryItems.length,
-        totalSize
+        deletableCount: deletableItems.length,
+        totalSize,
+        deletableSize
       };
     }).filter(cat => cat.count > 0);
   };
@@ -203,6 +207,11 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const selectedSize = results
     .filter(item => selectedItems.has(item.id))
     .reduce((total, item) => total + item.size, 0);
+
+  // 计算当前筛选结果中的选中项数量（用于清理按钮）
+  const filteredSelectedCount = filteredResults
+    .filter(item => selectedItems.has(item.id))
+    .length;
 
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden flex flex-col h-full">
@@ -334,8 +343,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                         className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
                       >
                         {(() => {
-                          const totalCategoryItems = results.filter(item => item.category === category.category).length;
-                          return selectedCount === totalCategoryItems ? '已全选' : selectedCount > 0 ? `已选${selectedCount}` : '选择';
+                          const deletableCategoryItems = results.filter(item =>
+                            item.category === category.category && item.canDelete !== false
+                          ).length;
+                          return selectedCount === deletableCategoryItems ? '已全选' : selectedCount > 0 ? `已选${selectedCount}` : '选择';
                         })()}
                       </button>
                     </div>
@@ -360,8 +371,10 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                         className="flex items-center gap-1 text-xs text-gray-600 hover:text-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50 border border-gray-200 hover:border-blue-200"
                       >
                         {(() => {
-                          const totalCategoryItems = results.filter(item => item.category === category.category).length;
-                          const isFullySelected = selectedCount === totalCategoryItems;
+                          const deletableCategoryItems = results.filter(item =>
+                            item.category === category.category && item.canDelete !== false
+                          ).length;
+                          const isFullySelected = selectedCount === deletableCategoryItems;
                           return isFullySelected ? (
                             <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
                           ) : selectedCount > 0 ? (
@@ -386,7 +399,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1">
                         <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-xs text-green-600 font-medium">可安全清理</span>
+                        <span className="text-xs text-green-600 font-medium">可安全清理 ({category.deletableCount})</span>
                       </div>
                       <div className="text-xs text-gray-400">
                         未分析

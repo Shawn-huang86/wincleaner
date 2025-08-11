@@ -156,6 +156,8 @@ function App() {
             current: Math.floor(progress.current * 0.5), // 占50%进度
           }),
           (results) => {
+            // 直接使用扫描器的结果，不要重复累积
+            allResults.length = 0; // 清空之前的结果
             allResults.push(...results);
             setScanResults([...allResults]); // 逐个呈现
           },
@@ -170,6 +172,8 @@ function App() {
             current: Math.floor(progress.current * 0.5),
           }),
           (results) => {
+            // 直接使用扫描器的结果，不要重复累积
+            allResults.length = 0; // 清空之前的结果
             allResults.push(...results);
             setScanResults([...allResults]); // 逐个呈现
           },
@@ -293,8 +297,12 @@ function App() {
     const newSelected = new Set(selectedItems);
 
     if (selected) {
-      // 添加当前筛选结果中的所有项目
-      filteredResults.forEach(item => newSelected.add(item.id));
+      // 只添加当前筛选结果中可删除的项目
+      filteredResults.forEach(item => {
+        if (item.canDelete !== false) { // 默认可删除，除非明确设置为false
+          newSelected.add(item.id);
+        }
+      });
     } else {
       // 只移除当前筛选结果中的项目，保留其他分类中的选择
       filteredResults.forEach(item => newSelected.delete(item.id));
@@ -306,12 +314,13 @@ function App() {
   // 批量选择分类中的所有项目
   const handleSelectCategory = (category: string) => {
     const categoryItems = scanResults.filter(item => item.category === category);
-    const allSelected = categoryItems.every(item => selectedItems.has(item.id));
+    const deletableItems = categoryItems.filter(item => item.canDelete !== false);
+    const allSelected = deletableItems.every(item => selectedItems.has(item.id));
 
     const newSelected = new Set(selectedItems);
     const targetState = !allSelected;
 
-    categoryItems.forEach(item => {
+    deletableItems.forEach(item => {
       if (targetState) {
         newSelected.add(item.id);
       } else {

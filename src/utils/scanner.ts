@@ -278,6 +278,7 @@ export const simulateScanning = async (
   // scanType === 'all' 时不过滤
 
   const results: ScanItem[] = [];
+  let itemIdCounter = 0; // 独立的ID计数器
 
   for (let i = 0; i < itemsToScan.length; i++) {
     const item = itemsToScan[i];
@@ -293,12 +294,14 @@ export const simulateScanning = async (
 
     // Add some randomness to make it more realistic
     if (Math.random() > 0.1) { // 90% chance to find the item
+      const newId = `item-${itemIdCounter++}`;
+
       // 检查是否应该被时间筛选排除
       if (shouldExcludeByTime(item, chatSettings)) {
         // 被时间筛选排除的文件，更新建议信息
         const monthsToKeep = item.category === 'wechat' ? chatSettings.wechatMonths : chatSettings.qqMonths;
         results.push({
-          id: `item-${i}`,
+          id: newId, // 使用独立计数器
           name: item.name,
           path: item.path,
           size: formatFileSize(item.sizeBytes),
@@ -308,7 +311,8 @@ export const simulateScanning = async (
           riskLevel: 'safe',
           suggestion: `🛡️ 受时间保护（保留最近${monthsToKeep}个月）`,
           lastModified: new Date(Date.now() - Math.random() * monthsToKeep * 30 * 24 * 60 * 60 * 1000),
-          isChatFile: true
+          isChatFile: true,
+          canDelete: false // 受时间保护的文件不能删除
         });
       } else {
         // 生成随机的文件修改时间
@@ -316,7 +320,7 @@ export const simulateScanning = async (
         const lastModified = new Date(Date.now() - randomDaysAgo * 24 * 60 * 60 * 1000);
 
         results.push({
-          id: `item-${i}`,
+          id: newId, // 使用独立计数器
           name: item.name,
           path: item.path,
           size: formatFileSize(item.sizeBytes),
@@ -326,7 +330,8 @@ export const simulateScanning = async (
           riskLevel: item.riskLevel,
           suggestion: item.suggestion,
           lastModified,
-          isChatFile: item.category === 'wechat' || item.category === 'qq'
+          isChatFile: item.category === 'wechat' || item.category === 'qq',
+          canDelete: item.riskLevel !== 'high' // 高风险文件不能删除
         });
       }
     }

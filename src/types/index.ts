@@ -10,6 +10,7 @@ export interface ScanItem {
   suggestion: string;
   lastModified?: Date;
   isChatFile?: boolean;
+  canDelete?: boolean; // 是否可以删除，默认根据riskLevel判断
 }
 
 export interface ScanProgress {

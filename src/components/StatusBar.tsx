@@ -17,7 +17,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   cleaningProgress,
 }) => {
   const isCleaning = cleaningProgress.total > 0;
-  const selectedCount = selectedItems.size;
+
+  // 计算当前显示结果中的选中项数量和大小
+  const currentSelectedItems = scanResults.filter(item => selectedItems.has(item.id));
+  const currentSelectedCount = currentSelectedItems.length;
+  const currentSelectedSize = currentSelectedItems.reduce((total, item) => total + item.sizeBytes, 0);
 
   const getStatusText = () => {
     if (isCleaning) {
@@ -26,10 +30,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     if (scanResults.length === 0) {
       return '就绪';
     }
-    if (selectedCount === 0) {
+    if (currentSelectedCount === 0) {
       return `找到 ${scanResults.length} 项，总计 ${formatFileSize(scanResults.reduce((total, item) => total + item.sizeBytes, 0))}`;
     }
-    return `已选择 ${selectedCount} 项，可释放 ${formatFileSize(totalSelectedSize)}`;
+    return `已选择 ${currentSelectedCount} 项，可释放 ${formatFileSize(currentSelectedSize)}`;
   };
 
   return (
