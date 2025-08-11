@@ -8,7 +8,9 @@ interface CleaningSidebarProps {
   onStartChatScan: () => void;
   onOpenSpecialCleaner: () => void;
   onOpenApplicationManager: () => void;
-  isScanning?: boolean;
+  isQuickScanning?: boolean;
+  isDeepScanning?: boolean;
+  isChatScanning?: boolean;
 }
 
 export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
@@ -17,7 +19,9 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
   onStartChatScan,
   onOpenSpecialCleaner,
   onOpenApplicationManager,
-  isScanning = false,
+  isQuickScanning = false,
+  isDeepScanning = false,
+  isChatScanning = false,
 }) => {
 
   return (
@@ -38,7 +42,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         {/* 快速清理 */}
         <button
           onClick={onStartQuickScan}
-          disabled={isScanning}
+          disabled={isQuickScanning}
           className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
@@ -49,7 +53,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
               <h3 className="font-semibold text-gray-900 text-sm">基础清理</h3>
               <p className="text-xs text-gray-600">清理临时文件、缓存等基础垃圾</p>
               <div className="mt-0.5 text-xs text-blue-600 font-medium">
-                {isScanning ? '扫描中...' : '安全 • 快速'}
+                {isQuickScanning ? '扫描中...' : '安全 • 快速'}
               </div>
             </div>
           </div>
@@ -58,7 +62,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         {/* 深度清理 */}
         <button
           onClick={onStartDeepScan}
-          disabled={isScanning}
+          disabled={isDeepScanning}
           className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
@@ -69,7 +73,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
               <h3 className="font-semibold text-gray-900 text-sm">全面清理</h3>
               <p className="text-xs text-gray-600">系统级清理、内存优化、注册表</p>
               <div className="mt-0.5 text-xs text-purple-600 font-medium">
-                {isScanning ? '扫描中...' : '全面 • 高效'}
+                {isDeepScanning ? '扫描中...' : '全面 • 高效'}
               </div>
             </div>
           </div>
@@ -78,7 +82,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         {/* 微信QQ清理 */}
         <button
           onClick={onStartChatScan}
-          disabled={isScanning}
+          disabled={isChatScanning}
           className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
@@ -89,7 +93,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
               <h3 className="font-semibold text-gray-900 text-sm">聊天清理</h3>
               <p className="text-xs text-gray-600">微信QQ缓存、图片视频、时间保护</p>
               <div className="mt-0.5 text-xs text-green-600 font-medium">
-                {isScanning ? '扫描中...' : '专业 • 保护'}
+                {isChatScanning ? '扫描中...' : '专业 • 保护'}
               </div>
             </div>
           </div>
@@ -141,7 +145,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
             <span className="font-medium">清理功能</span>
           </div>
           <div className="text-xs text-gray-500">
-            {isScanning ? '扫描中...' : '就绪'}
+            {(isQuickScanning || isDeepScanning || isChatScanning) ? '扫描中...' : '就绪'}
           </div>
         </div>
       </div>

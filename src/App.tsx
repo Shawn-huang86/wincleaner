@@ -19,7 +19,11 @@ import { RealScanner } from './utils/realScanner';
 import { RealCleaner } from './utils/realCleaner';
 
 function App() {
-  const [isScanning, setIsScanning] = useState(false);
+  // 独立的扫描状态管理
+  const [isQuickScanning, setIsQuickScanning] = useState(false);
+  const [isDeepScanning, setIsDeepScanning] = useState(false);
+  const [isChatScanning, setIsChatScanning] = useState(false);
+
   const [scanProgress, setScanProgress] = useState<ScanProgress>({ current: 0, total: 0, currentItem: '' });
   const [scanResults, setScanResults] = useState<ScanItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -78,14 +82,20 @@ function App() {
       window.removeEventListener('resize', measureHeight);
       clearTimeout(timer);
     };
-  }, [scanResults.length, isScanning]); // 依赖扫描结果和状态
+  }, [scanResults.length, isQuickScanning, isDeepScanning, isChatScanning]); // 依赖扫描结果和状态
 
   // 根据选中的分类过滤结果
   const filteredResults = selectedCategory
     ? scanResults.filter(item => item.category === selectedCategory)
     : scanResults;
   const handleStartScan = async (scanDeep: boolean = deepScan) => {
-    setIsScanning(true);
+    // 设置对应的扫描状态
+    if (scanDeep) {
+      setIsDeepScanning(true);
+    } else {
+      setIsQuickScanning(true);
+    }
+
     setIsChatScan(false);
     setScanResults([]);
     setSelectedItems(new Set());
@@ -110,7 +120,12 @@ function App() {
       await simulateScanning(setScanProgress, setScanResults, scanDeep, chatFileSettings, 'exclude-chat');
     }
 
-    setIsScanning(false);
+    // 清除对应的扫描状态
+    if (scanDeep) {
+      setIsDeepScanning(false);
+    } else {
+      setIsQuickScanning(false);
+    }
 
     // Add to scan history
     const newScan = {
@@ -229,7 +244,7 @@ function App() {
 
   const handleStartChatScan = async () => {
     console.log('开始聊天扫描...');
-    setIsScanning(true);
+    setIsChatScanning(true);
     setIsChatScan(true);
     setScanResults([]);
     setSelectedItems(new Set());
@@ -247,7 +262,7 @@ function App() {
       await simulateScanning(setScanProgress, setScanResults, true, chatFileSettings, 'chat-only');
     }
 
-    setIsScanning(false);
+    setIsChatScanning(false);
     // 不要立即设置 isChatScan 为 false，让它保持为 true 以便正确显示
     // setIsChatScan(false);
 
@@ -503,7 +518,9 @@ function App() {
           onStartChatScan={handleStartChatScan}
           onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
           onOpenApplicationManager={() => setShowApplicationManager(true)}
-          isScanning={isScanning}
+          isQuickScanning={isQuickScanning}
+          isDeepScanning={isDeepScanning}
+          isChatScanning={isChatScanning}
           deepScan={deepScan}
           isChatScan={isChatScan}
           scanProgress={scanProgress}
@@ -518,7 +535,7 @@ function App() {
           selectedItems={selectedItems}
           scanHistory={scanHistory}
           onShowSettings={() => setShowSettings(true)}
-          isScanning={isScanning}
+          isScanning={isQuickScanning || isDeepScanning || isChatScanning}
           scanProgress={scanProgress}
           isChatScan={isChatScan}
           deepScan={deepScan}
@@ -534,7 +551,9 @@ function App() {
           onStartChatScan={handleStartChatScan}
           onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
           onOpenApplicationManager={() => setShowApplicationManager(true)}
-          isScanning={isScanning}
+          isQuickScanning={isQuickScanning}
+          isDeepScanning={isDeepScanning}
+          isChatScanning={isChatScanning}
         />
 
         {/* 右侧内容区域 - 与左侧完全对称 */}

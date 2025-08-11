@@ -9,7 +9,9 @@ interface HeaderProps {
   onStartChatScan: () => void;
   onOpenSpecialCleaner: () => void;
   onOpenApplicationManager: () => void;
-  isScanning: boolean;
+  isQuickScanning: boolean;
+  isDeepScanning: boolean;
+  isChatScanning: boolean;
   deepScan: boolean;
   isChatScan: boolean;
   scanProgress: ScanProgress;
@@ -23,7 +25,9 @@ export const Header: React.FC<HeaderProps> = ({
   onStartChatScan,
   onOpenSpecialCleaner,
   onOpenApplicationManager,
-  isScanning,
+  isQuickScanning,
+  isDeepScanning,
+  isChatScanning,
   deepScan,
   isChatScan,
   scanProgress,
@@ -57,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 基础清理 */}
         <button
           onClick={onStartQuickScan}
-          disabled={isScanning}
+          disabled={isQuickScanning || isDeepScanning || isChatScanning}
           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Scan className="w-3.5 h-3.5" />
@@ -68,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 全面清理 */}
         <button
           onClick={onStartDeepScan}
-          disabled={isScanning}
+          disabled={isQuickScanning || isDeepScanning || isChatScanning}
           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-md hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Zap className="w-3.5 h-3.5" />
@@ -79,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 聊天清理 */}
         <button
           onClick={onStartChatScan}
-          disabled={isScanning}
+          disabled={isQuickScanning || isDeepScanning || isChatScanning}
           className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-md hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <MessageCircle className="w-3.5 h-3.5" />
