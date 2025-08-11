@@ -30,40 +30,65 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
   }, [isOpen]);
 
   const startScan = async () => {
+    console.log('开始专项清理扫描...');
     setLoading(true);
     setRemnants([]);
     setRegistryItems([]);
     setPrivacyItems([]);
     setSelectedItems(new Set());
+    setScanProgress({ current: 0, total: 3, currentItem: '准备扫描...' });
 
     try {
       // 第一阶段：扫描软件残留
-      setScanProgress({ current: 1, total: 3, currentItem: '扫描软件残留...' });
+      console.log('第一阶段：扫描软件残留');
+      setScanProgress({ current: 1, total: 3, currentItem: '正在扫描已安装的应用程序...' });
+
+      // 添加延迟以确保用户能看到进度
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const installedApps = await ApplicationManager.scanInstalledApplications();
+
+      setScanProgress({ current: 1, total: 3, currentItem: '正在检测软件残留文件...' });
+      await new Promise(resolve => setTimeout(resolve, 800));
+
       const softwareRemnants = await SoftwareRemnantDetector.scanSoftwareRemnants(
         installedApps,
         (progress) => setScanProgress({ ...progress, current: 1, total: 3 })
       );
+      console.log('软件残留扫描完成，找到:', softwareRemnants.length, '项');
 
       // 第二阶段：扫描注册表残留
-      setScanProgress({ current: 2, total: 3, currentItem: '扫描注册表残留...' });
+      console.log('第二阶段：扫描注册表残留');
+      setScanProgress({ current: 2, total: 3, currentItem: '正在扫描注册表项...' });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const registryRemnants = await RegistryScanner.scanRegistryRemnants(
         (progress) => setScanProgress({ ...progress, current: 2, total: 3 })
       );
+      console.log('注册表残留扫描完成，找到:', registryRemnants.length, '项');
 
       // 第三阶段：扫描隐私数据
-      setScanProgress({ current: 3, total: 3, currentItem: '扫描隐私数据...' });
+      console.log('第三阶段：扫描隐私数据');
+      setScanProgress({ current: 3, total: 3, currentItem: '正在扫描隐私数据...' });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const privacyData = await PrivacyCleaner.scanPrivacyData(
         (progress) => setScanProgress({ current: 3, total: 3, currentItem: progress.currentPath || '扫描隐私数据...' })
       );
+      console.log('隐私数据扫描完成，找到:', privacyData.length, '项');
 
       setRemnants(softwareRemnants);
       setRegistryItems(registryRemnants);
       setPrivacyItems(privacyData);
+
+      console.log('所有扫描完成');
     } catch (error) {
       console.error('专项清理扫描失败:', error);
     } finally {
       setLoading(false);
+      setScanProgress({ current: 0, total: 0, currentItem: '' });
     }
   };
 
@@ -291,7 +316,10 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
               <span className="text-sm">仅显示推荐清理</span>
             </label>
             <button
-              onClick={startScan}
+              onClick={() => {
+                console.log('重新扫描按钮被点击，当前loading状态:', loading);
+                startScan();
+              }}
               disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center"
             >
@@ -305,13 +333,21 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
         {loading && (
           <div className="p-8 text-center">
             <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">
+            <p className="text-lg font-medium text-gray-800 mb-2">
               {scanProgress.currentItem || '正在扫描软件残留...'}
             </p>
             {scanProgress.total > 0 && (
-              <div className="mt-2 text-sm text-gray-500">
-                {scanProgress.current} / {scanProgress.total}
-              </div>
+              <>
+                <div className="mt-4 text-sm text-gray-500 mb-2">
+                  阶段 {scanProgress.current} / {scanProgress.total}
+                </div>
+                <div className="w-full max-w-md mx-auto bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${(scanProgress.current / scanProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+              </>
             )}
           </div>
         )}

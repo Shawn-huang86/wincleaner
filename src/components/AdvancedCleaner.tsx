@@ -51,9 +51,9 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
         undefined,
         (progress) => setScanProgress(progress)
       );
-      
+
       setItems(scannedItems);
-      
+
       const scanStats = await AdvancedCleanerManager.getAdvancedCleaningStats(scannedItems);
       setStats(scanStats);
     } catch (error) {
@@ -277,7 +277,7 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? '扫描中...' : '开始扫描'}
+              {loading ? '扫描中...' : (items.length > 0 ? '重新扫描' : '开始扫描')}
             </button>
 
             <button

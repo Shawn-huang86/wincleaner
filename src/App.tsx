@@ -11,7 +11,6 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
 import { ApplicationManager } from './components/ApplicationManager';
-import { SoftwareRemnantCleaner } from './components/SoftwareRemnantCleaner';
 
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning, formatFileSize } from './utils/scanner';
@@ -36,7 +35,7 @@ function App() {
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
   const [showApplicationManager, setShowApplicationManager] = useState(false);
-  const [showSoftwareRemnantCleaner, setShowSoftwareRemnantCleaner] = useState(false);
+  const [isSpecialScanning, setIsSpecialScanning] = useState(false);
 
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
@@ -244,6 +243,163 @@ function App() {
     });
 
     // 结果已经在循环中逐个设置，无需再次设置
+  };
+
+  // 专项清理扫描
+  const handleStartSpecialScan = async () => {
+    setIsSpecialScanning(true);
+    setScanResults([]);
+    setSelectedItems(new Set());
+    setSelectedCategory(null);
+
+    setScanProgress({
+      current: 0,
+      total: 100,
+      currentPath: '准备专项清理扫描...',
+      stage: 'scanning'
+    });
+
+    try {
+      const { SoftwareRemnantDetector } = await import('./services/softwareRemnantDetector');
+      const { RegistryScanner } = await import('./services/registryScanner');
+      const { PrivacyCleaner } = await import('./services/privacyCleaner');
+      const { ApplicationManager } = await import('./services/applicationManager');
+
+      const allResults: ScanItem[] = [];
+
+      // 第一阶段：扫描软件残留
+      setScanProgress({
+        current: 10,
+        total: 100,
+        currentPath: '正在扫描已安装的应用程序...',
+        stage: 'scanning'
+      });
+
+      const installedApps = await ApplicationManager.scanInstalledApplications();
+
+      setScanProgress({
+        current: 20,
+        total: 100,
+        currentPath: '正在检测软件残留文件...',
+        stage: 'scanning'
+      });
+
+      const softwareRemnants = await SoftwareRemnantDetector.scanSoftwareRemnants(
+        installedApps,
+        (progress) => setScanProgress({
+          current: 20 + Math.floor(progress.current * 0.2),
+          total: 100,
+          currentPath: progress.currentPath || '检测软件残留文件...',
+          stage: 'scanning'
+        })
+      );
+
+      // 转换软件残留为 ScanItem 格式
+      for (const remnant of softwareRemnants) {
+        const scanItem: ScanItem = {
+          id: `software-${remnant.id}`,
+          name: remnant.name,
+          path: remnant.path,
+          size: remnant.size,
+          category: 'software-remnant',
+          type: remnant.type === 'file' ? 'file' : 'folder',
+          lastModified: new Date(),
+          canDelete: remnant.safeToDelete,
+          description: `${remnant.relatedSoftware} 的残留${remnant.type === 'file' ? '文件' : '文件夹'}`
+        };
+        allResults.push(scanItem);
+        setScanResults([...allResults]);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // 第二阶段：扫描注册表残留
+      setScanProgress({
+        current: 50,
+        total: 100,
+        currentPath: '正在扫描注册表项...',
+        stage: 'scanning'
+      });
+
+      const registryRemnants = await RegistryScanner.scanRegistryRemnants(
+        (progress) => setScanProgress({
+          current: 50 + Math.floor(progress.current * 0.25),
+          total: 100,
+          currentPath: progress.currentPath || '扫描注册表项...',
+          stage: 'scanning'
+        })
+      );
+
+      // 转换注册表残留为 ScanItem 格式
+      for (const registry of registryRemnants) {
+        const scanItem: ScanItem = {
+          id: `registry-${registry.id}`,
+          name: registry.keyName,
+          path: registry.keyPath,
+          size: registry.estimatedSize || 1024, // 注册表项估算大小
+          category: 'registry-remnant',
+          type: 'registry',
+          lastModified: new Date(),
+          canDelete: registry.safeToDelete,
+          description: `${registry.relatedSoftware} 的注册表残留`
+        };
+        allResults.push(scanItem);
+        setScanResults([...allResults]);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // 第三阶段：扫描隐私数据
+      setScanProgress({
+        current: 75,
+        total: 100,
+        currentPath: '正在扫描隐私数据...',
+        stage: 'scanning'
+      });
+
+      const privacyData = await PrivacyCleaner.scanPrivacyData(
+        (progress) => setScanProgress({
+          current: 75 + Math.floor(progress.current * 0.25),
+          total: 100,
+          currentPath: progress.currentPath || '扫描隐私数据...',
+          stage: 'scanning'
+        })
+      );
+
+      // 转换隐私数据为 ScanItem 格式
+      for (const privacy of privacyData) {
+        const scanItem: ScanItem = {
+          id: `privacy-${privacy.id}`,
+          name: privacy.name,
+          path: privacy.path,
+          size: privacy.size,
+          category: 'privacy-data',
+          type: privacy.type === 'file' ? 'file' : 'folder',
+          lastModified: new Date(),
+          canDelete: privacy.safeToDelete,
+          description: privacy.description
+        };
+        allResults.push(scanItem);
+        setScanResults([...allResults]);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: `专项清理扫描完成，找到 ${allResults.length} 个项目`,
+        stage: 'completed'
+      });
+
+    } catch (error) {
+      console.error('专项清理扫描失败:', error);
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: '专项清理扫描失败',
+        stage: 'error'
+      });
+    } finally {
+      setIsSpecialScanning(false);
+    }
   };
 
   const handleStartChatScan = async () => {
@@ -525,11 +681,12 @@ function App() {
           onStartQuickScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
-          onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
+          onStartSpecialScan={handleStartSpecialScan}
           onOpenApplicationManager={() => setShowApplicationManager(true)}
           isQuickScanning={isQuickScanning}
           isDeepScanning={isDeepScanning}
           isChatScanning={isChatScanning}
+          isSpecialScanning={isSpecialScanning}
           deepScan={deepScan}
           isChatScan={isChatScan}
           scanProgress={scanProgress}
@@ -558,11 +715,12 @@ function App() {
           onStartQuickScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
-          onOpenSpecialCleaner={() => setShowSoftwareRemnantCleaner(true)}
+          onStartSpecialScan={handleStartSpecialScan}
           onOpenApplicationManager={() => setShowApplicationManager(true)}
           isQuickScanning={isQuickScanning}
           isDeepScanning={isDeepScanning}
           isChatScanning={isChatScanning}
+          isSpecialScanning={isSpecialScanning}
         />
 
         {/* 右侧内容区域 - 与左侧完全对称 */}
@@ -642,12 +800,7 @@ function App() {
         />
       )}
 
-      {showSoftwareRemnantCleaner && (
-        <SoftwareRemnantCleaner
-          isOpen={showSoftwareRemnantCleaner}
-          onClose={() => setShowSoftwareRemnantCleaner(false)}
-        />
-      )}
+
 
 
     </div>

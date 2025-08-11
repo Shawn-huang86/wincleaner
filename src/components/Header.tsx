@@ -7,11 +7,12 @@ interface HeaderProps {
   onStartQuickScan: () => void;
   onStartDeepScan: () => void;
   onStartChatScan: () => void;
-  onOpenSpecialCleaner: () => void;
+  onStartSpecialScan: () => void;
   onOpenApplicationManager: () => void;
   isQuickScanning: boolean;
   isDeepScanning: boolean;
   isChatScanning: boolean;
+  isSpecialScanning: boolean;
   deepScan: boolean;
   isChatScan: boolean;
   scanProgress: ScanProgress;
@@ -23,11 +24,12 @@ export const Header: React.FC<HeaderProps> = ({
   onStartQuickScan,
   onStartDeepScan,
   onStartChatScan,
-  onOpenSpecialCleaner,
+  onStartSpecialScan,
   onOpenApplicationManager,
   isQuickScanning,
   isDeepScanning,
   isChatScanning,
+  isSpecialScanning,
   deepScan,
   isChatScan,
   scanProgress,
@@ -105,12 +107,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* 专项清理 */}
         <button
-          onClick={onOpenSpecialCleaner}
-          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium rounded-md hover:from-red-600 hover:to-red-700 transition-all duration-200"
+          onClick={onStartSpecialScan}
+          disabled={isSpecialScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isSpecialScanning
+              ? 'bg-gradient-to-r from-red-400 to-red-500 opacity-75'
+              : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+          }`}
         >
           <Eraser className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">专项清理</span>
-          <span className="lg:hidden">专项</span>
+          <span className="hidden lg:inline">{isSpecialScanning ? '扫描中...' : '专项清理'}</span>
+          <span className="lg:hidden">{isSpecialScanning ? '扫描中' : '专项'}</span>
         </button>
 
         {/* 应用管理 */}

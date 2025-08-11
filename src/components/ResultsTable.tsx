@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle, Trash2 } from 'lucide-react';
+import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle, Trash2, Eraser, Shield, Database } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -79,6 +79,24 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         displayName: 'QQ文件',
         icon: MessageCircle,
         color: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200'
+      },
+      {
+        category: 'software-remnant',
+        displayName: '软件残留',
+        icon: Eraser,
+        color: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
+      },
+      {
+        category: 'registry-remnant',
+        displayName: '注册表残留',
+        icon: Database,
+        color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200'
+      },
+      {
+        category: 'privacy-data',
+        displayName: '隐私数据',
+        icon: Shield,
+        color: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200'
       }
     ];
 

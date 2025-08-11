@@ -6,22 +6,24 @@ interface CleaningSidebarProps {
   onStartQuickScan: () => void;
   onStartDeepScan: () => void;
   onStartChatScan: () => void;
-  onOpenSpecialCleaner: () => void;
+  onStartSpecialScan: () => void;
   onOpenApplicationManager: () => void;
   isQuickScanning?: boolean;
   isDeepScanning?: boolean;
   isChatScanning?: boolean;
+  isSpecialScanning?: boolean;
 }
 
 export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
   onStartQuickScan,
   onStartDeepScan,
   onStartChatScan,
-  onOpenSpecialCleaner,
+  onStartSpecialScan,
   onOpenApplicationManager,
   isQuickScanning = false,
   isDeepScanning = false,
   isChatScanning = false,
+  isSpecialScanning = false,
 }) => {
 
   return (
@@ -101,18 +103,29 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
 
         {/* 专项清理 */}
         <button
-          onClick={onOpenSpecialCleaner}
-          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200 text-left"
+          onClick={onStartSpecialScan}
+          disabled={isSpecialScanning}
+          className={`w-full group p-2 border rounded-lg transition-all duration-200 text-left disabled:cursor-not-allowed ${
+            isSpecialScanning
+              ? 'border-red-300 bg-red-50 opacity-75'
+              : 'border-gray-200 hover:border-red-500 hover:bg-red-50'
+          }`}
         >
           <div className="flex items-center gap-2.5">
-            <div className="bg-red-100 group-hover:bg-red-200 p-1.5 rounded-md flex items-center justify-center">
+            <div className={`p-1.5 rounded-md flex items-center justify-center ${
+              isSpecialScanning
+                ? 'bg-red-200'
+                : 'bg-red-100 group-hover:bg-red-200'
+            }`}>
               <Eraser className="w-4 h-4 text-red-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 text-sm">专项清理</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">
+                {isSpecialScanning ? '专项扫描中...' : '专项清理'}
+              </h3>
               <p className="text-xs text-gray-600">软件残留、隐私数据清理</p>
               <div className="mt-0.5 text-xs text-red-600 font-medium">
-                高级 • 精准
+                {isSpecialScanning ? '扫描中...' : '高级 • 精准'}
               </div>
             </div>
           </div>
