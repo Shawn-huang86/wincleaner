@@ -61,34 +61,46 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 基础清理 */}
         <button
           onClick={onStartQuickScan}
-          disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isQuickScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isQuickScanning
+              ? 'bg-gradient-to-r from-blue-400 to-blue-500 opacity-75'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+          }`}
         >
           <Scan className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">基础清理</span>
-          <span className="lg:hidden">基础</span>
+          <span className="hidden lg:inline">{isQuickScanning ? '扫描中...' : '基础清理'}</span>
+          <span className="lg:hidden">{isQuickScanning ? '扫描中' : '基础'}</span>
         </button>
 
         {/* 全面清理 */}
         <button
           onClick={onStartDeepScan}
-          disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-md hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isDeepScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isDeepScanning
+              ? 'bg-gradient-to-r from-purple-400 to-purple-500 opacity-75'
+              : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
+          }`}
         >
           <Zap className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">全面清理</span>
-          <span className="lg:hidden">全面</span>
+          <span className="hidden lg:inline">{isDeepScanning ? '扫描中...' : '全面清理'}</span>
+          <span className="lg:hidden">{isDeepScanning ? '扫描中' : '全面'}</span>
         </button>
 
         {/* 聊天清理 */}
         <button
           onClick={onStartChatScan}
-          disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-md hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isChatScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isChatScanning
+              ? 'bg-gradient-to-r from-green-400 to-green-500 opacity-75'
+              : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+          }`}
         >
           <MessageCircle className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">聊天清理</span>
-          <span className="lg:hidden">聊天</span>
+          <span className="hidden lg:inline">{isChatScanning ? '扫描中...' : '聊天清理'}</span>
+          <span className="lg:hidden">{isChatScanning ? '扫描中' : '聊天'}</span>
         </button>
 
         {/* 专项清理 */}
