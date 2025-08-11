@@ -7,11 +7,12 @@ interface CleaningSidebarProps {
   onStartDeepScan: () => void;
   onStartChatScan: () => void;
   onStartSpecialScan: () => void;
-  onOpenApplicationManager: () => void;
+  onStartAppScan: () => void;
   isQuickScanning?: boolean;
   isDeepScanning?: boolean;
   isChatScanning?: boolean;
   isSpecialScanning?: boolean;
+  isAppScanning?: boolean;
 }
 
 export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
@@ -19,11 +20,12 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
   onStartDeepScan,
   onStartChatScan,
   onStartSpecialScan,
-  onOpenApplicationManager,
+  onStartAppScan,
   isQuickScanning = false,
   isDeepScanning = false,
   isChatScanning = false,
   isSpecialScanning = false,
+  isAppScanning = false,
 }) => {
 
   return (
@@ -133,18 +135,29 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
 
         {/* 应用管理 */}
         <button
-          onClick={onOpenApplicationManager}
-          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 text-left"
+          onClick={onStartAppScan}
+          disabled={isAppScanning}
+          className={`w-full group p-2 border rounded-lg transition-all duration-200 text-left disabled:cursor-not-allowed ${
+            isAppScanning
+              ? 'border-orange-300 bg-orange-50 opacity-75'
+              : 'border-gray-200 hover:border-orange-500 hover:bg-orange-50'
+          }`}
         >
           <div className="flex items-center gap-2.5">
-            <div className="bg-orange-100 group-hover:bg-orange-200 p-1.5 rounded-md flex items-center justify-center">
+            <div className={`p-1.5 rounded-md flex items-center justify-center ${
+              isAppScanning
+                ? 'bg-orange-200'
+                : 'bg-orange-100 group-hover:bg-orange-200'
+            }`}>
               <Package className="w-4 h-4 text-orange-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 text-sm">应用管理</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">
+                {isAppScanning ? '应用扫描中...' : '应用管理'}
+              </h3>
               <p className="text-xs text-gray-600">卸载软件、管理启动项</p>
               <div className="mt-0.5 text-xs text-orange-600 font-medium">
-                管理 • 优化
+                {isAppScanning ? '扫描中...' : '管理 • 优化'}
               </div>
             </div>
           </div>

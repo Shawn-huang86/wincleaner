@@ -12,20 +12,27 @@ export class ApplicationManager {
    * 扫描已安装的应用程序
    */
   static async scanInstalledApplications(): Promise<ApplicationInfo[]> {
+    console.log('ApplicationManager: 开始扫描应用程序...');
+
     if (this.isScanning) {
+      console.log('ApplicationManager: 正在扫描中，返回缓存结果');
       return this.installedApps;
     }
 
     this.isScanning = true;
-    
+
     try {
       // 检查是否在Electron环境中
       if (this.isElectronEnvironment()) {
+        console.log('ApplicationManager: 使用Electron环境扫描');
         this.installedApps = await this.scanWithElectron();
       } else {
         // 浏览器环境下使用模拟数据
+        console.log('ApplicationManager: 使用模拟数据');
         this.installedApps = this.getMockApplications();
       }
+
+      console.log(`ApplicationManager: 找到 ${this.installedApps.length} 个应用程序`);
 
       // 使用AI分析应用程序
       await this.analyzeApplicationsWithAI();

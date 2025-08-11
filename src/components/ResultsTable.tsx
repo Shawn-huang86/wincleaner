@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle, Trash2, Eraser, Shield, Database } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckSquare, Square, CheckCircle, Search, Folder, Globe, User, Settings, Archive, Download, MessageCircle, Trash2, Eraser, Shield, Database, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScanItem } from '../types';
 import { formatFileSize } from '../utils/helpers';
 
@@ -28,6 +28,13 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   availableHeight,
   onCleanSelected
 }) => {
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // 当结果变化时重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [results, filteredResults]);
 
   // 分类统计
   const getCategoryStats = () => {
@@ -97,6 +104,12 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
         displayName: '隐私数据',
         icon: Shield,
         color: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200'
+      },
+      {
+        category: 'application',
+        displayName: '已安装应用',
+        icon: Package,
+        color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200'
       }
     ];
 
@@ -119,6 +132,19 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
 
   // 动态计算卡片网格配置
   const getGridConfig = () => {
+    // 检查是否为应用管理模式
+    const isAppMode = results.length > 0 && results.every(item => item.category === 'application');
+
+    if (isAppMode) {
+      // 应用管理模式：使用固定的4列布局，确保页面不被拉伸
+      return {
+        gridCols: 'grid-cols-4', // 固定4列
+        cardHeight: 'h-32', // 固定卡片高度
+        gap: 'gap-3',
+        isCompact: false
+      };
+    }
+
     if (!availableHeight || results.length === 0) {
       // 默认配置（扫描前或无可用高度时）
       return {
@@ -250,16 +276,217 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-medium rounded-lg hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               <Trash2 className="w-4 h-4" />
-              清理选中项 {selectedCount > 0 && `(${selectedCount})`}
+              {(() => {
+                // 检查是否包含应用类别
+                const hasApplications = results.some(item => item.category === 'application');
+                if (hasApplications && results.every(item => item.category === 'application')) {
+                  return `卸载选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
+                }
+                return `清理选中项 ${selectedCount > 0 ? `(${selectedCount})` : ''}`;
+              })()}
             </button>
           )}
         </div>
       )}
 
-      {/* 分类汇总卡片 - 动态调整布局 */}
-      <div className="flex-1 overflow-auto p-4 bg-gray-50">
-        <div className={`grid ${gridConfig.gridCols} ${gridConfig.gap} auto-rows-max`}>
-          {categoryStats.map((category) => {
+      {/* 检查是否为应用管理模式 */}
+      {(() => {
+        const isAppMode = results.length > 0 && results.every(item => item.category === 'application');
+        console.log('ResultsTable: 检查应用管理模式');
+        console.log('ResultsTable: results.length =', results.length);
+        console.log('ResultsTable: filteredResults.length =', filteredResults.length);
+        console.log('ResultsTable: isAppMode =', isAppMode);
+        console.log('ResultsTable: results =', results);
+        console.log('ResultsTable: filteredResults =', filteredResults);
+        return isAppMode;
+      })() ? (
+        /* 应用管理卡片视图 - 每个应用一张卡片 */
+        <div className="flex-1 flex flex-col bg-gray-50">
+          {/* 计算分页 */}
+          {(() => {
+            // 根据网格配置计算每页显示的卡片数量
+            const getItemsPerPage = () => {
+              console.log('分页计算: 使用4×2布局');
+              // 固定4×2布局，每页显示8个应用，确保页面不被拉伸
+              const itemsPerPage = 8;
+              console.log('分页计算: itemsPerPage =', itemsPerPage, '(4×2固定布局)');
+              return itemsPerPage;
+            };
+
+            const itemsPerPage = getItemsPerPage();
+            const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentItems = filteredResults.slice(startIndex, endIndex);
+
+            return (
+              <>
+                {/* 卡片网格 */}
+                <div className="flex-1 overflow-hidden p-4">
+                  <div className={`grid ${gridConfig.gridCols} ${gridConfig.gap} auto-rows-max h-full`}>
+                    {currentItems.map((app) => {
+              const isSelected = selectedItems.has(app.id);
+              const isSystemApp = app.description?.includes('(系统应用)');
+
+              return (
+                <div
+                  key={app.id}
+                  className={`bg-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200 hover:border-gray-300 ${gridConfig.isCompact ? `${gridConfig.cardHeight} p-2` : 'h-40 p-3'} flex flex-col ${
+                    isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''
+                  }`}
+                >
+                  {!gridConfig.isCompact ? (
+                    // 正常模式 - 完整布局
+                    <>
+                      {/* 卡片头部 */}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className={`p-1.5 rounded-md shadow-sm ${isSystemApp ? 'bg-red-100' : 'bg-orange-100'}`}>
+                            <Package className={`w-4 h-4 ${isSystemApp ? 'text-red-600' : 'text-orange-600'}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-semibold text-gray-900 mb-0.5 truncate">{app.name}</h4>
+                            <p className="text-xs text-gray-500 truncate">{app.description?.replace(' (系统应用)', '')}</p>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-base font-bold text-gray-900">
+                            {formatFileSize(app.size)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 应用详细信息 */}
+                      <div className="flex-1 text-xs text-gray-500 mb-2">
+                        <div className="mb-1">安装时间: {app.lastModified.toLocaleDateString('zh-CN')}</div>
+                        <div className="truncate">路径: {app.path}</div>
+                      </div>
+
+                      {/* 底部操作区 */}
+                      <div className="mt-auto pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            {isSystemApp ? (
+                              <span className="text-xs text-red-600 font-medium">系统应用</span>
+                            ) : app.canDelete ? (
+                              <span className="text-xs text-green-600 font-medium">可安全卸载</span>
+                            ) : (
+                              <span className="text-xs text-yellow-600 font-medium">不建议卸载</span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => onSelectItem(app.id, !isSelected)}
+                            disabled={!app.canDelete}
+                            className={`text-xs px-2 py-1 rounded transition-colors ${
+                              !app.canDelete
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : isSelected
+                                ? 'bg-red-600 text-white hover:bg-red-700'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                            }`}
+                          >
+                            {!app.canDelete ? '不可选' : isSelected ? '已选择' : '选择'}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    // 紧凑模式
+                    <div className="flex items-center justify-between h-full px-1">
+                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                        <div className={`p-0.5 rounded ${isSystemApp ? 'bg-red-100' : 'bg-orange-100'} flex-shrink-0`}>
+                          <Package className={`w-2.5 h-2.5 ${isSystemApp ? 'text-red-600' : 'text-orange-600'}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-medium text-gray-900 truncate">{app.name}</h4>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-1">
+                        <div className="text-xs font-bold text-gray-900">
+                          {formatFileSize(app.size)}
+                        </div>
+                        <button
+                          onClick={() => onSelectItem(app.id, !isSelected)}
+                          disabled={!app.canDelete}
+                          className={`text-xs px-1 py-0.5 rounded mt-0.5 ${
+                            !app.canDelete
+                              ? 'bg-gray-100 text-gray-400'
+                              : isSelected
+                              ? 'bg-red-600 text-white'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {isSelected ? '✓' : '选'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+                    })}
+                  </div>
+                </div>
+
+                {/* 分页控件 */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+                    <div className="flex items-center text-sm text-gray-500">
+                      显示 {startIndex + 1}-{Math.min(endIndex, filteredResults.length)} 项，共 {filteredResults.length} 项
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={`flex items-center gap-1 px-3 py-1 text-sm rounded-md transition-colors ${
+                          currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        上一页
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-8 h-8 text-sm rounded-md transition-colors ${
+                              currentPage === page
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center gap-1 px-3 py-1 text-sm rounded-md transition-colors ${
+                          currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        下一页
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      ) : (
+        /* 原有的分类汇总卡片视图 */
+        <div className="flex-1 overflow-auto p-4 bg-gray-50">
+          <div className={`grid ${gridConfig.gridCols} ${gridConfig.gap} auto-rows-max`}>
+            {categoryStats.map((category) => {
             const IconComponent = category.icon;
             const selectedCount = results.filter(item =>
               item.category === category.category && selectedItems.has(item.id)
@@ -434,7 +661,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
             );
           })}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

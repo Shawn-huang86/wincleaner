@@ -10,7 +10,7 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
-import { ApplicationManager } from './components/ApplicationManager';
+
 
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
 import { simulateScanning, formatFileSize } from './utils/scanner';
@@ -34,8 +34,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
-  const [showApplicationManager, setShowApplicationManager] = useState(false);
+
   const [isSpecialScanning, setIsSpecialScanning] = useState(false);
+  const [isAppScanning, setIsAppScanning] = useState(false);
 
   const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
     wechatMonths: 3,
@@ -402,6 +403,83 @@ function App() {
     }
   };
 
+  // 应用管理扫描
+  const handleStartAppScan = async () => {
+    setIsAppScanning(true);
+    setScanResults([]);
+    setSelectedItems(new Set());
+    setSelectedCategory(null);
+
+    setScanProgress({
+      current: 0,
+      total: 100,
+      currentPath: '准备扫描已安装应用...',
+      stage: 'scanning'
+    });
+
+    try {
+      const { ApplicationManager } = await import('./services/applicationManager');
+
+      setScanProgress({
+        current: 20,
+        total: 100,
+        currentPath: '正在扫描已安装的应用程序...',
+        stage: 'scanning'
+      });
+
+      const applications = await ApplicationManager.scanInstalledApplications();
+      console.log('App: 获取到应用程序数据:', applications.length, '个应用');
+
+      setScanProgress({
+        current: 60,
+        total: 100,
+        currentPath: '正在分析应用程序信息...',
+        stage: 'scanning'
+      });
+
+      const allResults: ScanItem[] = [];
+
+      // 转换应用信息为 ScanItem 格式
+      for (const app of applications) {
+        const scanItem: ScanItem = {
+          id: `app-${app.name}-${app.version}`,
+          name: app.name,
+          path: app.installPath,
+          size: app.size,
+          category: 'application',
+          type: 'application',
+          lastModified: app.installDate,
+          canDelete: !app.isSystemApp && app.aiAnalysis?.safeToUninstall !== false,
+          description: `${app.publisher} - ${app.version}${app.isSystemApp ? ' (系统应用)' : ''}`
+        };
+        allResults.push(scanItem);
+        setScanResults([...allResults]);
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      console.log('App: 转换完成，总共', allResults.length, '个应用项目');
+      console.log('App: 扫描结果:', allResults);
+
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: `应用扫描完成，找到 ${allResults.length} 个应用`,
+        stage: 'completed'
+      });
+
+    } catch (error) {
+      console.error('应用扫描失败:', error);
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: '应用扫描失败',
+        stage: 'error'
+      });
+    } finally {
+      setIsAppScanning(false);
+    }
+  };
+
   const handleStartChatScan = async () => {
     console.log('开始聊天扫描...');
     setIsChatScanning(true);
@@ -682,11 +760,12 @@ function App() {
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
           onStartSpecialScan={handleStartSpecialScan}
-          onOpenApplicationManager={() => setShowApplicationManager(true)}
+          onStartAppScan={handleStartAppScan}
           isQuickScanning={isQuickScanning}
           isDeepScanning={isDeepScanning}
           isChatScanning={isChatScanning}
           isSpecialScanning={isSpecialScanning}
+          isAppScanning={isAppScanning}
           deepScan={deepScan}
           isChatScan={isChatScan}
           scanProgress={scanProgress}
@@ -716,11 +795,12 @@ function App() {
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
           onStartSpecialScan={handleStartSpecialScan}
-          onOpenApplicationManager={() => setShowApplicationManager(true)}
+          onStartAppScan={handleStartAppScan}
           isQuickScanning={isQuickScanning}
           isDeepScanning={isDeepScanning}
           isChatScanning={isChatScanning}
           isSpecialScanning={isSpecialScanning}
+          isAppScanning={isAppScanning}
         />
 
         {/* 右侧内容区域 - 与左侧完全对称 */}
@@ -794,11 +874,7 @@ function App() {
         onClose={() => setShowFileIdentifier(false)}
       />
 
-      {showApplicationManager && (
-        <ApplicationManager
-          onClose={() => setShowApplicationManager(false)}
-        />
-      )}
+
 
 
 

@@ -8,11 +8,12 @@ interface HeaderProps {
   onStartDeepScan: () => void;
   onStartChatScan: () => void;
   onStartSpecialScan: () => void;
-  onOpenApplicationManager: () => void;
+  onStartAppScan: () => void;
   isQuickScanning: boolean;
   isDeepScanning: boolean;
   isChatScanning: boolean;
   isSpecialScanning: boolean;
+  isAppScanning: boolean;
   deepScan: boolean;
   isChatScan: boolean;
   scanProgress: ScanProgress;
@@ -25,11 +26,12 @@ export const Header: React.FC<HeaderProps> = ({
   onStartDeepScan,
   onStartChatScan,
   onStartSpecialScan,
-  onOpenApplicationManager,
+  onStartAppScan,
   isQuickScanning,
   isDeepScanning,
   isChatScanning,
   isSpecialScanning,
+  isAppScanning,
   deepScan,
   isChatScan,
   scanProgress,
@@ -122,12 +124,17 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* 应用管理 */}
         <button
-          onClick={onOpenApplicationManager}
-          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-md hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+          onClick={onStartAppScan}
+          disabled={isAppScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isAppScanning
+              ? 'bg-gradient-to-r from-orange-400 to-orange-500 opacity-75'
+              : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700'
+          }`}
         >
           <Package className="w-3.5 h-3.5" />
-          <span className="hidden lg:inline">应用管理</span>
-          <span className="lg:hidden">应用</span>
+          <span className="hidden lg:inline">{isAppScanning ? '扫描中...' : '应用管理'}</span>
+          <span className="lg:hidden">{isAppScanning ? '扫描中' : '应用'}</span>
         </button>
 
         {/* 文件识别 */}
