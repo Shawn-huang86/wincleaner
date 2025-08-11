@@ -53,10 +53,10 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
         {/* 扫描状态提示 - 居中显示 */}
         <div className="flex-1 flex justify-center">
           {!isScanning && scanResults.length === 0 && (
-            <div className="text-xs text-gray-500 bg-gray-50 px-3 py-1 rounded border border-gray-200">
+            <div className="text-xs text-blue-600 bg-blue-50 px-3 py-1 rounded border border-blue-200">
               <div className="flex items-center justify-center gap-1">
-                <Scan className="w-3 h-3 text-gray-400" />
-                <span>点击上方清理按钮开始扫描</span>
+                <Scan className="w-3 h-3 text-blue-500" />
+                <span className="font-medium">点击上方清理按钮开始扫描</span>
               </div>
             </div>
           )}

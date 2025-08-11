@@ -23,9 +23,9 @@ export const ScanSection: React.FC<ScanSectionProps> = ({
       {/* 扫描状态指示 */}
       {!isScanning && scanResults.length === 0 && (
         <div className="flex items-center justify-center py-3">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Scan className="w-4 h-4 text-gray-400" />
-            <span>点击导航栏中的清理按钮开始扫描</span>
+          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+            <Scan className="w-4 h-4 text-blue-500" />
+            <span className="font-medium">点击导航栏中的清理按钮开始扫描</span>
           </div>
         </div>
       )}
