@@ -27,7 +27,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
   return (
     <div className="w-56 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* 标题 */}
-      <div className="p-3 border-b border-gray-200">
+      <div className="p-2 border-b border-gray-200">
         <div className="flex items-center gap-1.5 mb-1">
           <div className="p-1 bg-blue-100 rounded-md">
             <Zap className="w-3.5 h-3.5 text-blue-600" />
@@ -38,12 +38,12 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
       </div>
 
       {/* 清理功能按钮 - 垂直布局 */}
-      <div className="flex-1 p-3 space-y-2.5 overflow-y-auto">
+      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
         {/* 快速清理 */}
         <button
           onClick={onStartQuickScan}
           disabled={isQuickScanning}
-          className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
             <div className="bg-blue-100 group-hover:bg-blue-200 p-1.5 rounded-md flex items-center justify-center">
@@ -63,7 +63,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         <button
           onClick={onStartDeepScan}
           disabled={isDeepScanning}
-          className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
             <div className="bg-purple-100 group-hover:bg-purple-200 p-1.5 rounded-md flex items-center justify-center">
@@ -83,7 +83,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         <button
           onClick={onStartChatScan}
           disabled={isChatScanning}
-          className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
           <div className="flex items-center gap-2.5">
             <div className="bg-green-100 group-hover:bg-green-200 p-1.5 rounded-md flex items-center justify-center">
@@ -102,7 +102,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         {/* 专项清理 */}
         <button
           onClick={onOpenSpecialCleaner}
-          className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200 text-left"
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all duration-200 text-left"
         >
           <div className="flex items-center gap-2.5">
             <div className="bg-red-100 group-hover:bg-red-200 p-1.5 rounded-md flex items-center justify-center">
@@ -121,7 +121,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
         {/* 应用管理 */}
         <button
           onClick={onOpenApplicationManager}
-          className="w-full group p-2.5 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 text-left"
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all duration-200 text-left"
         >
           <div className="flex items-center gap-2.5">
             <div className="bg-orange-100 group-hover:bg-orange-200 p-1.5 rounded-md flex items-center justify-center">
@@ -139,7 +139,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
       </div>
 
       {/* 底部状态栏 */}
-      <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2.5 h-[45px]">
+      <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-2 py-2 h-[38px]">
         <div className="flex items-center justify-between h-full">
           <div className="text-xs text-gray-700">
             <span className="font-medium">清理功能</span>

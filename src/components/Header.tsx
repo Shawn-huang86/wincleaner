@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   scanResults
 }) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* 主导航栏 */}
       <div className="flex items-center justify-between">
         {/* 左侧标题 */}
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onStartQuickScan}
           disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Scan className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">基础清理</span>
@@ -73,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onStartDeepScan}
           disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-md hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-md hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Zap className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">全面清理</span>
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onStartChatScan}
           disabled={isQuickScanning || isDeepScanning || isChatScanning}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-md hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-medium rounded-md hover:from-green-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">聊天清理</span>
@@ -94,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 专项清理 */}
         <button
           onClick={onOpenSpecialCleaner}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium rounded-md hover:from-red-600 hover:to-red-700 transition-all duration-200"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium rounded-md hover:from-red-600 hover:to-red-700 transition-all duration-200"
         >
           <Eraser className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">专项清理</span>
@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 应用管理 */}
         <button
           onClick={onOpenApplicationManager}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-md hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-md hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
         >
           <Package className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">应用管理</span>
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 文件识别 */}
         <button
           onClick={onOpenFileIdentifier}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-medium rounded-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
+          className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-medium rounded-md hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
         >
           <Search className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">文件识别</span>

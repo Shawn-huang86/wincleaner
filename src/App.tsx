@@ -509,8 +509,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
-      {/* 顶部标题栏 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2">
+      {/* 顶部标题栏 - 减少垂直内边距 */}
+      <div className="bg-white border-b border-gray-200 px-4 py-1.5">
         <Header
           onOpenFileIdentifier={() => setShowFileIdentifier(true)}
           onStartQuickScan={() => handleStartScan(false)}
@@ -560,8 +560,8 @@ function App() {
         <div className="flex-1 flex flex-col">
           {/* 主内容区域 - 使用flex-1占据剩余空间，确保StatusBar固定在底部 */}
           <div ref={rightContentRef} className="flex flex-col flex-1">
-            {/* 扫描和结果区域 - 占据剩余空间 */}
-            <div className="flex-1 p-3 pb-0 overflow-hidden">
+            {/* 扫描和结果区域 - 占据剩余空间，减少内边距 */}
+            <div className="flex-1 p-2 pb-0 overflow-hidden">
               <ResultsTable
                 results={scanResults}
                 filteredResults={filteredResults}
