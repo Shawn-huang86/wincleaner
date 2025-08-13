@@ -13,7 +13,7 @@ export interface UpdateSource {
 
 export const UPDATE_CONFIG = {
   // 当前版本（应该从package.json自动读取）
-  CURRENT_VERSION: '1.1.0',
+  CURRENT_VERSION: '1.0.0', // 临时改为1.0.0来测试更新提醒
   
   // 更新检查间隔（毫秒）
   CHECK_INTERVAL: 24 * 60 * 60 * 1000, // 24小时
@@ -21,64 +21,64 @@ export const UPDATE_CONFIG = {
   // 更新源配置（按优先级排序）
   UPDATE_SOURCES: [
     {
-      name: '本地版本文件',
-      url: '/version.json', // 本地静态文件，用于演示
-      headers: {
-        'Accept': 'application/json'
-      },
-      priority: 1,
-      description: '本地版本信息，演示用'
-    },
-    {
-      name: '官方更新API',
-      url: 'https://your-domain.com/api/wincleaner/latest.json',
+      name: 'GitHub Pages 官方更新源',
+      url: 'https://shawn-huang86.github.io/wincleaner-updates/latest.json',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'WinCleaner-UpdateChecker'
       },
-      priority: 2,
-      description: '官方更新API，需要部署后配置'
+      priority: 1,
+      description: '官方更新源，免费可靠，全球CDN加速'
     },
     {
-      name: 'GitHub Pages',
-      url: 'https://Shawn-huang86.github.io/wincleaner-updates/latest.json', // 替换为你的实际用户名
+      name: '本地版本文件',
+      url: '/version.json', // 本地静态文件，用于演示和备用
+      headers: {
+        'Accept': 'application/json'
+      },
+      priority: 2,
+      description: '本地备用版本信息'
+    },
+    {
+      name: '备用更新源',
+      url: 'https://cdn.jsdelivr.net/gh/Shawn-huang86/wincleaner-updates@main/latest.json',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'WinCleaner-UpdateChecker'
       },
       priority: 3,
-      description: '静态托管，免费可靠'
+      description: 'CDN备用源，高速访问'
     }
   ] as UpdateSource[],
   
   // 下载页面配置
   DOWNLOAD_PAGES: {
-    official: 'https://wincleaner.com/download',
-    backup: 'https://cdn.wincleaner.com/releases',
-    direct: 'https://download.wincleaner.com/latest'
+    github: 'https://github.com/Shawn-huang86/wincleaner-updates', // 项目主页
+    official: 'https://shawn-huang86.github.io/wincleaner-updates/', // GitHub Pages页面
+    backup: 'https://github.com/Shawn-huang86/wincleaner' // 主项目页面（如果公开的话）
   },
   
   // 用户指南
   USER_GUIDE: {
     noAccount: {
-      title: '无需GitHub账号',
-      description: 'WinCleaner使用GitHub的公开API检查更新，任何用户都可以免费访问，无需注册GitHub账号。'
+      title: '✅ 无需GitHub账号',
+      description: 'WinCleaner使用GitHub Pages公开服务检查更新，任何用户都可以免费访问，无需注册GitHub账号。'
     },
     networkIssues: {
-      title: '网络访问问题',
+      title: '🌐 网络访问问题',
       solutions: [
-        '尝试使用VPN或代理访问',
-        '等待网络恢复后重试',
-        '访问官方网站手动下载',
-        '联系技术支持获取离线安装包'
+        '应用会自动尝试多个更新源',
+        '如果主源不可用，会自动切换到备用源',
+        '支持全球CDN加速访问',
+        '如仍有问题，请检查网络连接'
       ]
     },
     downloadOptions: {
-      title: '下载方式',
+      title: '📥 下载方式',
       options: [
-        { name: 'GitHub Releases', url: 'github', description: '最新版本，全球CDN加速' },
-        { name: 'Gitee 发布', url: 'gitee', description: '国内镜像，下载速度快' },
-        { name: '官方网站', url: 'official', description: '官方下载，稳定可靠' }
+        { name: 'GitHub Releases', url: 'github', description: '官方发布页面，最新版本' },
+        { name: '官方页面', url: 'official', description: '项目主页，稳定可靠' },
+        { name: 'CDN备用', url: 'backup', description: 'CDN加速，高速下载' }
       ]
     }
   }
