@@ -2,8 +2,8 @@
   "name": "wincleaner",
   "private": true,
   "version": "1.1.0",
-  "type": "module",
-  "main": "electron/main.js",
+
+  "main": "electron/main.cjs",
   "homepage": "./",
   "scripts": {
     "dev": "vite",
