@@ -181,7 +181,8 @@ function createMenu() {
         {
           label: '检查更新',
           click: () => {
-            shell.openExternal('https://github.com/your-username/wincleaner');
+            // 发送检查更新消息到渲染进程
+            mainWindow.webContents.send('check-for-updates');
           }
         }
       ]
@@ -259,6 +260,19 @@ ipcMain.handle('get-app-info', async () => {
     platform: process.platform,
     arch: process.arch
   };
+});
+
+// 打开外部链接
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || '打开链接失败'
+    };
+  }
 });
 
 // 文件操作相关的IPC处理器

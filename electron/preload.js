@@ -12,6 +12,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 应用信息
   getAppInfo: () => ipcRenderer.invoke('get-app-info'),
 
+  // 外部链接
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+
   // 文件操作 API
   scanJunkFiles: (options) => ipcRenderer.invoke('scan-junk-files', options),
   deleteFiles: (filePaths) => ipcRenderer.invoke('delete-files', filePaths),
@@ -25,6 +28,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onNewScan: (callback) => ipcRenderer.on('new-scan', callback),
   onExportReport: (callback) => ipcRenderer.on('export-report', callback),
   onOpenSettings: (callback) => ipcRenderer.on('open-settings', callback),
+  onCheckForUpdates: (callback) => ipcRenderer.on('check-for-updates', callback),
 
   // 移除监听器
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),

@@ -110,7 +110,7 @@ const SCAN_ITEMS = [
     sizeBytes: 1500000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true，只在深度扫描或微信专项清理中出现
   },
   {
     name: '微信图片缓存',
@@ -120,7 +120,7 @@ const SCAN_ITEMS = [
     sizeBytes: 2800000000,
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 包含聊天图片，建议备份后清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: '微信视频缓存',
@@ -130,7 +130,7 @@ const SCAN_ITEMS = [
     sizeBytes: 4200000000,
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 包含聊天视频，建议备份后清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: '微信临时文件',
@@ -140,7 +140,7 @@ const SCAN_ITEMS = [
     sizeBytes: 800000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true，确保基础清理不包含
   },
   {
     name: '微信日志文件',
@@ -150,7 +150,7 @@ const SCAN_ITEMS = [
     sizeBytes: 300000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: '微信小程序缓存',
@@ -160,7 +160,7 @@ const SCAN_ITEMS = [
     sizeBytes: 600000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   // QQ清理项目
   {
@@ -171,7 +171,7 @@ const SCAN_ITEMS = [
     sizeBytes: 1200000000,
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 包含接收文件，建议检查后清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true，只在深度扫描或QQ专项清理中出现
   },
   {
     name: 'QQ图片缓存',
@@ -181,7 +181,7 @@ const SCAN_ITEMS = [
     sizeBytes: 2100000000,
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 包含聊天图片，建议备份后清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: 'QQ临时文件',
@@ -191,7 +191,7 @@ const SCAN_ITEMS = [
     sizeBytes: 500000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true，确保基础清理不包含
   },
   {
     name: 'QQ表情包缓存',
@@ -201,7 +201,7 @@ const SCAN_ITEMS = [
     sizeBytes: 800000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: 'QQ语音缓存',
@@ -211,7 +211,7 @@ const SCAN_ITEMS = [
     sizeBytes: 400000000,
     riskLevel: 'caution' as const,
     suggestion: '⚠️ 包含语音消息，建议备份后清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: 'QQ游戏缓存',
@@ -221,7 +221,7 @@ const SCAN_ITEMS = [
     sizeBytes: 1500000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   },
   {
     name: 'QQ浏览器缓存',
@@ -231,7 +231,7 @@ const SCAN_ITEMS = [
     sizeBytes: 900000000,
     riskLevel: 'safe' as const,
     suggestion: '✅ 可安全清理',
-    isDeepScan: false
+    isDeepScan: true  // 改为 true
   }
 ];
 
@@ -270,7 +270,6 @@ export const simulateScanning = async (
   if (scanType === 'chat-only') {
     // 只扫描微信QQ文件
     itemsToScan = itemsToScan.filter(item => item.category === 'wechat' || item.category === 'qq');
-    console.log('聊天扫描模式，过滤后的项目数量:', itemsToScan.length);
   } else if (scanType === 'exclude-chat') {
     // 排除微信QQ文件
     itemsToScan = itemsToScan.filter(item => item.category !== 'wechat' && item.category !== 'qq');

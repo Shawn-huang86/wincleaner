@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trash2, Shield, Search, Sparkles, Scan, Zap, MessageCircle, Eraser, Package } from 'lucide-react';
 import { ScanProgress } from '../types';
+import { UpdateButton } from './UpdateButton';
 
 interface HeaderProps {
   onOpenFileIdentifier: () => void;
@@ -149,7 +150,10 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
         {/* 右侧功能区 */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* 更新检查按钮 */}
+          <UpdateButton showText={false} className="relative" />
+
           {/* 安全标识 */}
           <div className="hidden lg:flex items-center gap-1.5 text-xs text-gray-500">
             <Shield className="w-3 h-3" />

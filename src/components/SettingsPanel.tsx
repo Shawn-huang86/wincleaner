@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain, Lock } from 'lucide-react';
+import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain, Lock, RefreshCw } from 'lucide-react';
 import { ChatFileSettings as ChatFileSettingsType } from '../types';
 import { AIConfigPanel } from './AIConfigPanel';
 import { PermissionStatus } from './PermissionStatus';
+import { UpdateNotification, useUpdateChecker } from './UpdateNotification';
+import { UpdateHelp } from './UpdateHelp';
+import { UpdateConfigWizard } from './UpdateConfigWizard';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -27,6 +30,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [autoCleanSafe, setAutoCleanSafe] = useState(false);
   const [showAIConfig, setShowAIConfig] = useState(false);
   const [showPermissionStatus, setShowPermissionStatus] = useState(false);
+  const { updateResult, isChecking, checkForUpdates } = useUpdateChecker(false);
 
   if (!isOpen) return null;
 
@@ -392,10 +396,45 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <h4 className="text-lg font-medium text-gray-900">关于</h4>
             </div>
 
-            <div className="ml-10 text-sm text-gray-600 space-y-1">
-              <div>WinCleaner v1.0.0</div>
-              <div>智能垃圾清理工具</div>
-              <div>© 2025 WinCleaner Team</div>
+            <div className="ml-10 space-y-3">
+              <div className="text-sm text-gray-600 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>WinCleaner v1.1.0</span>
+                  {updateResult?.hasUpdate && (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                      有新版本
+                    </span>
+                  )}
+                </div>
+                <div>智能垃圾清理工具</div>
+                <div>© 2025 WinCleaner Team</div>
+              </div>
+
+              {/* 更新检查 */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={checkForUpdates}
+                  disabled={isChecking}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
+                  {isChecking ? '检查中...' : '检查更新'}
+                </button>
+
+                {updateResult && !updateResult.hasUpdate && !updateResult.error && (
+                  <span className="text-xs text-green-600">已是最新版本</span>
+                )}
+
+                {updateResult?.error && (
+                  <span className="text-xs text-red-600">检查失败</span>
+                )}
+              </div>
+
+              {/* 更新帮助 */}
+              <div className="ml-10 flex gap-3">
+                <UpdateHelp />
+                <UpdateConfigWizard />
+              </div>
             </div>
           </div>
         </div>

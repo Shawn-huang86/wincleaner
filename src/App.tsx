@@ -10,6 +10,7 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
+import { UpdateNotification, useUpdateChecker } from './components/UpdateNotification';
 
 
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';
@@ -22,6 +23,9 @@ function App() {
   const [isQuickScanning, setIsQuickScanning] = useState(false);
   const [isDeepScanning, setIsDeepScanning] = useState(false);
   const [isChatScanning, setIsChatScanning] = useState(false);
+
+  // 更新检查
+  const { updateResult } = useUpdateChecker(true); // 启动时自动检查
 
   const [scanProgress, setScanProgress] = useState<ScanProgress>({ current: 0, total: 0, currentItem: '' });
   const [scanResults, setScanResults] = useState<ScanItem[]>([]);
@@ -83,6 +87,26 @@ function App() {
       clearTimeout(timer);
     };
   }, [scanResults.length, isQuickScanning, isDeepScanning, isChatScanning]); // 依赖扫描结果和状态
+
+  // 监听Electron菜单事件
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      // 监听菜单触发的更新检查
+      const handleCheckUpdates = () => {
+        // 触发设置面板中的更新检查
+        setShowSettings(true);
+        // 可以在这里添加直接触发更新检查的逻辑
+      };
+
+      window.electronAPI.onCheckForUpdates(handleCheckUpdates);
+
+      return () => {
+        if (window.electronAPI.removeAllListeners) {
+          window.electronAPI.removeAllListeners('check-for-updates');
+        }
+      };
+    }
+  }, []);
 
   // 根据选中的分类过滤结果
   const filteredResults = selectedCategory
@@ -888,6 +912,8 @@ function App() {
         onClose={() => setShowFileIdentifier(false)}
       />
 
+      {/* 更新通知 */}
+      <UpdateNotification autoCheck={true} />
 
 
 
