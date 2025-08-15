@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
@@ -22,4 +23,79 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment and sensitive files
 .env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Configuration files with sensitive data
+config/local.json
+config/production.json
+config/development.json
+*.config.local.js
+*.config.local.ts
+
+# Build artifacts
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.app
+*.deb
+*.rpm
+
+# Temporary files
+temp_*.txt
+*.tmp
+*.temp
+
+# Test files with sensitive data
+test-config.json
+secrets.json
+api-keys.json
+
+# IDE specific
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# AI and API keys
+ai-config.json
+openai-key.txt
+api-key.txt
+*.key
+*.pem
+*.p12
+*.crt
+
+# Debug files
+debug-env.bat
+temp_node.txt
+temp_npm.txt
+
+# Certificate files
+certificates/
+*.pfx
+*.cer
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.backup
+*.bak

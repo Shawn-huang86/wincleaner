@@ -13,7 +13,7 @@ export interface UpdateSource {
 
 export const UPDATE_CONFIG = {
   // 当前版本（应该从package.json自动读取）
-  CURRENT_VERSION: '1.0.0', // 临时改为1.0.0来测试更新提醒
+  CURRENT_VERSION: '1.2.0', // 更新到最新版本
   
   // 更新检查间隔（毫秒）
   CHECK_INTERVAL: 24 * 60 * 60 * 1000, // 24小时

@@ -10,6 +10,7 @@ describe('AIService', () => {
     AIService.setConfig({
       provider: 'disabled',
       enabled: false,
+      apiKey: undefined,
       maxTokens: 1000,
       temperature: 0.1
     });
@@ -25,7 +26,7 @@ describe('AIService', () => {
     it('should set and get configuration correctly', () => {
       const config: AIConfig = {
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         model: 'gpt-4',
         enabled: true,
         maxTokens: 2000,
@@ -75,7 +76,7 @@ describe('AIService', () => {
       // Configure AI service
       AIService.setConfig({
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         enabled: true
       });
 
@@ -114,15 +115,20 @@ describe('AIService', () => {
     it('should handle API errors gracefully', async () => {
       AIService.setConfig({
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         enabled: true
       });
+
+      // Clear any existing cache entries for this request
+      const cacheKey = `C:\\temp\\test.tmp_1024_${new Date('2023-01-01').getTime()}`;
+      AIService.clearCacheByKey(cacheKey);
 
       // Mock API error
       (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValueOnce({
         ok: false,
         status: 401,
-        statusText: 'Unauthorized'
+        statusText: 'Unauthorized',
+        json: async () => ({})
       } as Response);
 
       const result = await AIService.analyzeFile(mockRequest);
@@ -132,7 +138,7 @@ describe('AIService', () => {
     it('should cache analysis results', async () => {
       AIService.setConfig({
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         enabled: true
       });
 
@@ -157,6 +163,10 @@ describe('AIService', () => {
         json: async () => mockResponse
       } as Response);
 
+      // Clear any existing cache entries for this request
+      const cacheKey = `C:\\temp\\test.tmp_1024_${new Date('2023-01-01').getTime()}`;
+      AIService.clearCacheByKey(cacheKey);
+
       // First call should make API request
       const result1 = await AIService.analyzeFile(mockRequest);
       expect(fetch).toHaveBeenCalledTimes(1);
@@ -173,7 +183,7 @@ describe('AIService', () => {
     it('should process multiple files in batches', async () => {
       AIService.setConfig({
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         enabled: true
       });
 
@@ -231,7 +241,7 @@ describe('AIService', () => {
     it('should handle malformed JSON responses', async () => {
       AIService.setConfig({
         provider: 'openai',
-        apiKey: 'test-key',
+        apiKey: process.env.TEST_API_KEY || 'test-key',
         enabled: true
       });
 

@@ -1,0 +1,30 @@
+# Pre-commit hooks for WinCleaner
+# This configuration runs security checks before each commit
+
+repos:
+  - repo: local
+    hooks:
+      - id: security-check
+        name: Security Check
+        entry: npm run security-check:pre-commit
+        language: system
+        files: \.(js|ts|jsx|tsx|json|md|yml|yaml)$
+        exclude: ^(node_modules|dist|build|\.git|coverage|\.vscode|\.idea|temp|logs|\.env\.example|\.env\.test|package-lock\.json|yarn\.lock)
+        pass_filenames: false
+        always_run: true
+      
+      - id: eslint-check
+        name: ESLint Check
+        entry: npm run lint
+        language: system
+        files: \.(js|ts|jsx|tsx)$
+        pass_filenames: false
+        always_run: true
+      
+      - id: git-secrets
+        name: Git Secrets Check
+        entry: git secrets --scan
+        language: system
+        files: \.(js|ts|jsx|tsx|json|md|yml|yaml)$
+        pass_filenames: false
+        always_run: true

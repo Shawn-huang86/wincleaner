@@ -280,9 +280,9 @@ export class AIService {
       case 'openai':
         return await this.callOpenAI(prompt);
       case 'claude':
-        return await this.callClaude(prompt);
+        return await this.callClaude();
       case 'local':
-        return await this.callLocalModel(prompt);
+        return await this.callLocalModel();
       default:
         throw new Error('未配置AI服务提供商');
     }
@@ -326,7 +326,7 @@ export class AIService {
   /**
    * 调用Claude API
    */
-  private static async callClaude(prompt: string): Promise<string> {
+  private static async callClaude(): Promise<string> {
     // Claude API实现
     throw new Error('Claude API暂未实现');
   }
@@ -334,7 +334,7 @@ export class AIService {
   /**
    * 调用本地模型
    */
-  private static async callLocalModel(prompt: string): Promise<string> {
+  private static async callLocalModel(): Promise<string> {
     // 本地模型实现（如Ollama）
     throw new Error('本地模型暂未实现');
   }
@@ -447,5 +447,12 @@ export class AIService {
         this.cache.delete(key);
       }
     }
+  }
+
+  /**
+   * 清除指定缓存
+   */
+  static clearCacheByKey(cacheKey: string): void {
+    this.cache.delete(cacheKey);
   }
 }

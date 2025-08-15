@@ -122,11 +122,13 @@ jobs:
   "build": {
     "win": {
       "certificateFile": "path/to/certificate.p12",
-      "certificatePassword": "password"
+      "certificatePassword": "${CERTIFICATE_PASSWORD}"
     }
   }
 }
 ```
+
+**注意**：证书密码应通过环境变量 `CERTIFICATE_PASSWORD` 设置，不要在代码中硬编码。
 
 ## 🚀 下一步
 

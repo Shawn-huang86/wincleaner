@@ -1,13 +1,11 @@
 {
-  "version": "1.1.0",
-  "releaseDate": "2025-01-13T00:00:00Z",
-  "downloadUrl": "https://wincleaner.com/download/WinCleaner-Setup-1.1.0.exe",
+  "version": "1.2.0",
+  "releaseDate": "2025-06-20T12:00:00Z",
+  "downloadUrl": "https://wincleaner.com/download/WinCleaner-Setup-1.2.0.exe",
   "releaseNotes": [
-    "微信QQ清理弹窗布局优化",
-    "弹窗高度减少40%，更紧凑美观", 
-    "改进响应式设计，适配更多屏幕",
-    "优化CSS网格布局系统",
-    "增强用户体验和界面流畅度"
+    "新增功能1",
+    "优化功能2",
+    "修复问题3"
   ],
   "isRequired": false,
   "fileSize": 157286400,
