@@ -3,7 +3,7 @@
  * 负责检查应用更新、版本比较、下载更新等功能
  */
 
-import { UPDATE_CONFIG, getBestUpdateSource, getRecommendedDownloadPage } from '../config/updateConfig';
+import { UPDATE_CONFIG, getRecommendedDownloadPage } from '../config/updateConfig';
 
 export interface UpdateInfo {
   version: string;
@@ -13,6 +13,38 @@ export interface UpdateInfo {
   isRequired: boolean;
   fileSize: number;
 }
+
+// GitHub API 响应类型
+interface GitHubAsset {
+  name: string;
+  browser_download_url: string;
+  size: number;
+}
+
+interface GitHubRelease {
+  tag_name: string;
+  name: string;
+  published_at: string;
+  html_url: string;
+  body: string;
+  assets: GitHubAsset[];
+  releaseDate?: string;
+  isRequired?: boolean;
+  fileSize?: number;
+}
+
+// 自定义API响应类型
+interface CustomRelease {
+  version: string;
+  releaseDate?: string;
+  downloadUrl: string;
+  releaseNotes: string[];
+  isRequired?: boolean;
+  fileSize?: number;
+  published_at?: string;
+}
+
+type ReleaseInfo = GitHubRelease | CustomRelease;
 
 export interface UpdateCheckResult {
   hasUpdate: boolean;
@@ -92,7 +124,7 @@ export class UpdateService {
       // 在Electron环境中获取版本
       if (typeof window !== 'undefined' && window.electronAPI) {
         const appInfo = await window.electronAPI.getAppInfo();
-        return appInfo.version;
+        return appInfo?.version || UPDATE_CONFIG.CURRENT_VERSION;
       }
       
       // 浏览器环境返回默认版本
@@ -106,7 +138,7 @@ export class UpdateService {
   /**
    * 获取最新发布信息
    */
-  private static async fetchLatestRelease(): Promise<any> {
+  private static async fetchLatestRelease(): Promise<ReleaseInfo | null> {
     const sources = UPDATE_CONFIG.UPDATE_SOURCES.sort((a, b) => a.priority - b.priority);
 
     for (const source of sources) {
@@ -125,9 +157,13 @@ export class UpdateService {
   /**
    * 尝试从指定URL获取发布信息
    */
-  private static async tryFetchFromUrl(url: string, headers: Record<string, string> = {}): Promise<any> {
+  private static async tryFetchFromUrl(url: string, headers: Record<string, string> = {}): Promise<ReleaseInfo | null> {
     try {
       console.log(`🌐 检查更新源: ${url}`);
+
+      // 创建AbortController用于超时控制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
       const response = await fetch(url, {
         headers: {
@@ -135,8 +171,10 @@ export class UpdateService {
           'User-Agent': 'WinCleaner-UpdateChecker',
           ...headers
         },
-        timeout: 10000 // 10秒超时
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -175,57 +213,57 @@ export class UpdateService {
   /**
    * 提取版本号（支持多种API格式）
    */
-  private static extractVersion(release: any): string {
+  private static extractVersion(release: ReleaseInfo): string {
     // 自定义API格式
-    if (release.version) {
+    if ('version' in release && release.version) {
       return release.version.replace(/^v/, '');
     }
 
     // GitHub API格式
-    if (release.tag_name) {
+    if ('tag_name' in release && release.tag_name) {
       return release.tag_name.replace(/^v/, '');
     }
 
     // 其他格式
-    return release.name?.replace(/^v/, '') || '0.0.0';
+    return ('name' in release && release.name) ? release.name.replace(/^v/, '') : '0.0.0';
   }
 
   /**
    * 获取下载链接
    */
-  private static getDownloadUrl(release: any): string {
+  private static getDownloadUrl(release: ReleaseInfo): string {
     // 自定义API格式
-    if (release.downloadUrl) {
+    if ('downloadUrl' in release && release.downloadUrl) {
       return release.downloadUrl;
     }
 
     // GitHub API格式
-    if (release.assets) {
-      const windowsAsset = release.assets.find((asset: any) =>
+    if ('assets' in release && release.assets) {
+      const windowsAsset = release.assets.find((asset: GitHubAsset) =>
         asset.name.includes('Setup') && asset.name.includes('.exe')
       );
-      return windowsAsset?.browser_download_url || release.html_url;
+      return windowsAsset?.browser_download_url || ('html_url' in release ? release.html_url : getRecommendedDownloadPage());
     }
 
     // 默认返回HTML页面
-    return release.html_url || getRecommendedDownloadPage();
+    return ('html_url' in release ? release.html_url : getRecommendedDownloadPage());
   }
   
   /**
    * 解析更新说明（支持多种格式）
    */
-  private static parseReleaseNotes(release: any): string[] {
+  private static parseReleaseNotes(release: ReleaseInfo): string[] {
     // 自定义API格式
-    if (Array.isArray(release.releaseNotes)) {
+    if ('releaseNotes' in release && Array.isArray(release.releaseNotes)) {
       return release.releaseNotes.slice(0, 5);
     }
 
     // GitHub API格式
-    if (typeof release.body === 'string') {
+    if ('body' in release && typeof release.body === 'string') {
       const lines = release.body.split('\n')
-        .filter(line => line.trim().startsWith('*') || line.trim().startsWith('-'))
-        .map(line => line.replace(/^[\s\-\*]+/, '').trim())
-        .filter(line => line.length > 0);
+        .filter((line: string) => line.trim().startsWith('*') || line.trim().startsWith('-'))
+        .map((line: string) => line.replace(/^[\s\-*]+/, '').trim())
+        .filter((line: string) => line.length > 0);
 
       return lines.length > 0 ? lines.slice(0, 5) : ['查看完整更新说明'];
     }
@@ -247,15 +285,15 @@ export class UpdateService {
   /**
    * 获取安装包大小
    */
-  private static getAssetSize(release: any): number {
+  private static getAssetSize(release: ReleaseInfo): number {
     // 自定义API格式
-    if (release.fileSize) {
+    if ('fileSize' in release && release.fileSize) {
       return release.fileSize;
     }
 
     // GitHub API格式
-    if (release.assets) {
-      const windowsAsset = release.assets.find((asset: any) =>
+    if ('assets' in release && release.assets) {
+      const windowsAsset = release.assets.find((asset: GitHubAsset) =>
         asset.name.includes('Setup') && asset.name.includes('.exe')
       );
       return windowsAsset?.size || 0;
@@ -282,7 +320,7 @@ export class UpdateService {
    */
   static async openDownloadPage(downloadUrl: string): Promise<void> {
     try {
-      if (typeof window !== 'undefined' && window.electronAPI) {
+      if (typeof window !== 'undefined' && window.electronAPI && 'openExternal' in window.electronAPI) {
         // 在Electron中打开外部链接
         await window.electronAPI.openExternal(downloadUrl);
       } else {
@@ -332,6 +370,87 @@ export class UpdateService {
     } catch (error) {
       console.error('自动检查更新失败:', error);
       return null;
+    }
+  }
+
+  /**
+   * 下载更新文件
+   */
+  static async downloadUpdate(updateInfo: UpdateInfo, onProgress?: (progress: number) => void): Promise<string> {
+    try {
+      console.log('📥 开始下载更新文件...');
+      
+      if (typeof window !== 'undefined' && window.electronAPI && 'downloadUpdate' in window.electronAPI) {
+        // 在Electron环境中下载
+        const result = await window.electronAPI.downloadUpdate(updateInfo.downloadUrl);
+        
+        // 模拟进度更新（在实际应用中，应该通过IPC事件接收真实的进度）
+        if (onProgress) {
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+              progress = 100;
+              clearInterval(interval);
+            }
+            onProgress(Math.min(progress, 100));
+          }, 200);
+        }
+        
+        return result;
+      } else {
+        // 在浏览器环境中，打开下载页面
+        await this.openDownloadPage(updateInfo.downloadUrl);
+        throw new Error('浏览器环境不支持直接下载，请手动下载安装');
+      }
+    } catch (error) {
+      console.error('下载更新失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 安装更新
+   */
+  static async installUpdate(filePath: string): Promise<void> {
+    try {
+      console.log('🔧 开始安装更新...');
+      
+      if (typeof window !== 'undefined' && window.electronAPI && 'installUpdate' in window.electronAPI) {
+        // 在Electron环境中安装
+        await window.electronAPI.installUpdate(filePath);
+      } else {
+        throw new Error('浏览器环境不支持直接安装');
+      }
+    } catch (error) {
+      console.error('安装更新失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 下载并安装更新（完整流程）
+   */
+  static async downloadAndInstallUpdate(
+    updateInfo: UpdateInfo, 
+    onProgress?: (progress: number) => void,
+    onStatusChange?: (status: string) => void
+  ): Promise<void> {
+    try {
+      onStatusChange?.('开始下载更新...');
+      
+      // 下载更新文件
+      const filePath = await this.downloadUpdate(updateInfo, onProgress);
+      
+      onStatusChange?.('下载完成，准备安装...');
+      
+      // 安装更新
+      await this.installUpdate(filePath);
+      
+      onStatusChange?.('安装完成！');
+    } catch (error) {
+      console.error('下载并安装更新失败:', error);
+      throw error;
     }
   }
 }

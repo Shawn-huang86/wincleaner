@@ -22,6 +22,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   fileExists: (filePath) => ipcRenderer.invoke('file-exists', filePath),
   getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath),
 
+  // 更新相关 API
+  downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
+  installUpdate: (filePath) => ipcRenderer.invoke('install-update', filePath),
+
   // 监听主进程消息
   onQuickScan: (callback) => ipcRenderer.on('quick-scan', callback),
   onDeepScan: (callback) => ipcRenderer.on('deep-scan', callback),

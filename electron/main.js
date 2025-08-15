@@ -2,6 +2,8 @@ const { app, BrowserWindow, Menu, shell, ipcMain, dialog, Tray, nativeImage } = 
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const https = require('https');
+const { exec } = require('child_process');
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
@@ -337,6 +339,73 @@ ipcMain.handle('get-file-info', async (event, filePath) => {
   }
 });
 
+// 下载更新文件
+ipcMain.handle('download-update', async (event, url) => {
+  try {
+    console.log('📥 开始下载更新:', url);
+    
+    // 创建下载目录
+    const downloadsDir = path.join(os.homedir(), 'Downloads', 'WinCleaner-Updates');
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+    
+    // 生成文件名
+    const fileName = `WinCleaner-Setup-${new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')}.exe`;
+    const filePath = path.join(downloadsDir, fileName);
+    
+    // 下载文件（不传递回调函数）
+    await downloadFile(url, filePath);
+    
+    console.log('✅ 下载完成:', filePath);
+    return { success: true, data: filePath };
+  } catch (error) {
+    console.error('❌ 下载失败:', error);
+    return {
+      success: false,
+      error: error.message || '下载失败'
+    };
+  }
+});
+
+// 安装更新
+ipcMain.handle('install-update', async (event, filePath) => {
+  try {
+    console.log('🔧 开始安装更新:', filePath);
+    
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      throw new Error('安装文件不存在');
+    }
+    
+    // 显示确认对话框
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: 'question',
+      title: '确认安装',
+      message: 'WinCleaner 将关闭并安装新版本，是否继续？',
+      detail: '安装过程中请勿关闭计算机，安装完成后应用将自动重启。',
+      buttons: ['立即安装', '取消'],
+      defaultId: 0,
+      cancelId: 1
+    });
+    
+    if (result.response !== 0) {
+      return { success: false, error: '用户取消安装' };
+    }
+    
+    // 执行安装
+    await installUpdateFile(filePath);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('❌ 安装失败:', error);
+    return {
+      success: false,
+      error: error.message || '安装失败'
+    };
+  }
+});
+
 // 文件操作实现函数
 /**
  * 扫描垃圾文件
@@ -597,4 +666,109 @@ function isJunkFile(fileName, filePath) {
   // 检查是否在临时目录中
   const tempKeywords = ['temp', 'tmp', 'cache', 'log'];
   return tempKeywords.some(keyword => lowerPath.includes(keyword));
+}
+
+/**
+ * 下载文件
+ */
+function downloadFile(url, filePath) {
+  return new Promise((resolve, reject) => {
+    const fileStream = fs.createWriteStream(filePath);
+
+    const request = https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+        return;
+      }
+
+      response.pipe(fileStream);
+    });
+
+    request.on('error', (error) => {
+      fs.unlink(filePath, () => {}); // 删除不完整的文件
+      reject(error);
+    });
+
+    fileStream.on('finish', () => {
+      fileStream.close();
+      resolve(filePath);
+    });
+
+    fileStream.on('error', (error) => {
+      fs.unlink(filePath, () => {}); // 删除不完整的文件
+      reject(error);
+    });
+
+    // 设置超时
+    request.setTimeout(300000, () => { // 5分钟超时
+      request.destroy();
+      fs.unlink(filePath, () => {}); // 删除不完整的文件
+      reject(new Error('下载超时'));
+    });
+  });
+}
+
+/**
+ * 安装更新文件
+ */
+function installUpdateFile(filePath) {
+  return new Promise((resolve, reject) => {
+    // Windows平台
+    if (process.platform === 'win32') {
+      // 静默安装，安装完成后不自动重启
+      const command = `"${filePath}" /SILENT /NORESTART`;
+      
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(`安装失败: ${error.message}`));
+          return;
+        }
+        
+        // 安装成功，关闭当前应用
+        setTimeout(() => {
+          app.quit();
+          resolve();
+        }, 1000);
+      });
+    }
+    // macOS平台
+    else if (process.platform === 'darwin') {
+      // macOS的dmg安装逻辑
+      const command = `hdiutil attach "${filePath}" && cp -r /Volumes/WinCleaner/WinCleaner.app /Applications/ && hdiutil detach /Volumes/WinCleaner`;
+      
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(`安装失败: ${error.message}`));
+          return;
+        }
+        
+        // 安装成功，关闭当前应用
+        setTimeout(() => {
+          app.quit();
+          resolve();
+        }, 1000);
+      });
+    }
+    // Linux平台
+    else if (process.platform === 'linux') {
+      // Linux的deb/rpm安装逻辑
+      const command = `sudo dpkg -i "${filePath}" || sudo rpm -i "${filePath}"`;
+      
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(`安装失败: ${error.message}`));
+          return;
+        }
+        
+        // 安装成功，关闭当前应用
+        setTimeout(() => {
+          app.quit();
+          resolve();
+        }, 1000);
+      });
+    }
+    else {
+      reject(new Error('不支持的操作系统平台'));
+    }
+  });
 }
