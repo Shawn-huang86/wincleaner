@@ -1,7 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, RefreshCw, AlertCircle, CheckCircle, HelpCircle, Loader2 } from 'lucide-react';
-import { UpdateService, UpdateCheckResult } from '../services/updateService';
 import { UpdateGuide } from './UpdateGuide';
+
+declare global {
+  interface Window {
+    electronAPI: {
+      checkForUpdates: () => Promise<{ success: boolean; error?: string }>;
+      installUpdate: () => Promise<{ success: boolean; error?: string }>;
+      onUpdateStatus: (callback: (event: any, data: any) => void) => void;
+      removeUpdateStatusListener: () => void;
+    };
+  }
+}
+
+interface UpdateInfo {
+  version: string;
+  releaseDate?: string;
+  releaseNotes?: string[];
+}
+
+interface UpdateCheckResult {
+  hasUpdate: boolean;
+  currentVersion: string;
+  latestVersion: string;
+  updateInfo?: UpdateInfo;
+}
 
 interface UpdateNotificationProps {
   onClose?: () => void;
@@ -22,20 +45,38 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    // 监听更新状态
+    if (window.electronAPI) {
+      window.electronAPI.onUpdateStatus((event, data) => {
+        handleUpdateStatus(data);
+      });
+    }
+    
+    return () => {
+      if (window.electronAPI) {
+        window.electronAPI.removeUpdateStatusListener();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (autoCheck) {
-      checkForUpdates();
+      // 延迟检查更新，让应用完全启动
+      const timer = setTimeout(() => {
+        checkForUpdates();
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [autoCheck]);
 
   const checkForUpdates = async () => {
+    if (!window.electronAPI) return;
+    
     setIsChecking(true);
     try {
-      const result = await UpdateService.checkForUpdates();
-      setUpdateResult(result);
-      
-      // 如果有更新，显示通知
-      if (result.hasUpdate) {
-        setShowNotification(true);
+      const result = await window.electronAPI.checkForUpdates();
+      if (!result.success) {
+        console.error('检查更新失败:', result.error);
       }
     } catch (error) {
       console.error('检查更新失败:', error);
@@ -44,46 +85,90 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
     }
   };
 
-  const handleDownload = async () => {
-    if (!updateResult?.updateInfo) return;
+  const handleUpdateStatus = (data: any) => {
+    console.log('更新状态:', data);
     
-    try {
-      setUpdateStatus('downloading');
-      setStatusMessage('正在下载更新...');
-      setErrorMessage('');
-      
-      // 下载并安装更新
-      await UpdateService.downloadAndInstallUpdate(
-        updateResult.updateInfo,
-        (progress) => {
-          setDownloadProgress(progress);
-          setStatusMessage(`正在下载更新... ${progress}%`);
-        },
-        (status) => {
-          setStatusMessage(status);
-        }
-      );
-      
-      setUpdateStatus('completed');
-      setStatusMessage('更新完成！应用将重启...');
-      
-      // 延迟关闭通知
-      setTimeout(() => {
-        handleClose();
-      }, 3000);
-      
-    } catch (error) {
-      console.error('更新失败:', error);
-      setUpdateStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : '更新失败');
-      setStatusMessage('更新失败');
+    switch (data.status) {
+      case 'checking':
+        setIsChecking(true);
+        setStatusMessage('正在检查更新...');
+        break;
+        
+      case 'available':
+        setIsChecking(false);
+        setShowNotification(true);
+        setUpdateResult({
+          hasUpdate: true,
+          currentVersion: '1.0.0', // 这里应该从应用信息获取
+          latestVersion: data.info.version,
+          updateInfo: {
+            version: data.info.version,
+            releaseDate: data.info.releaseDate,
+            releaseNotes: data.info.releaseNotes || []
+          }
+        });
+        break;
+        
+      case 'not-available':
+        setIsChecking(false);
+        setShowNotification(false);
+        setStatusMessage('当前已是最新版本');
+        setTimeout(() => setStatusMessage(''), 3000);
+        break;
+        
+      case 'downloading':
+        setUpdateStatus('downloading');
+        setDownloadProgress(Math.round(data.progress.percent));
+        setStatusMessage(`正在下载更新... ${Math.round(data.progress.percent)}%`);
+        break;
+        
+      case 'downloaded':
+        setUpdateStatus('idle');
+        setStatusMessage('更新下载完成，点击安装');
+        break;
+        
+      case 'error':
+        setIsChecking(false);
+        setUpdateStatus('error');
+        setErrorMessage(data.error || '更新失败');
+        setStatusMessage('更新失败');
+        break;
     }
   };
 
-  const handleManualDownload = async () => {
-    if (updateResult?.updateInfo) {
-      await UpdateService.openDownloadPage(updateResult.updateInfo.downloadUrl);
+  const handleDownload = async () => {
+    if (!window.electronAPI) return;
+    
+    try {
+      setUpdateStatus('installing');
+      setStatusMessage('正在安装更新...');
+      setErrorMessage('');
+      
+      // 安装更新
+      const result = await window.electronAPI.installUpdate();
+      
+      if (result.success) {
+        setUpdateStatus('completed');
+        setStatusMessage('更新完成！应用将重启...');
+        
+        // 延迟关闭通知
+        setTimeout(() => {
+          handleClose();
+        }, 3000);
+      } else {
+        throw new Error(result.error || '安装失败');
+      }
+    } catch (error) {
+      console.error('安装失败:', error);
+      setUpdateStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : '安装失败');
+      setStatusMessage('安装失败');
     }
+  };
+
+  const handleManualDownload = () => {
+    // 打开GitHub releases页面
+    window.open('https://github.com/Shawn-huang86/wincleaner/releases', '_blank');
   };
 
   const handleClose = () => {
@@ -297,10 +382,12 @@ export const useUpdateChecker = (autoCheck: boolean = true) => {
   const [isChecking, setIsChecking] = useState(false);
 
   const checkForUpdates = async () => {
+    if (!window.electronAPI) return null;
+    
     setIsChecking(true);
     try {
-      const result = await UpdateService.checkForUpdates();
-      setUpdateResult(result);
+      const result = await window.electronAPI.checkForUpdates();
+      // 注意：这里不直接设置结果，因为结果会通过事件监听器更新
       return result;
     } finally {
       setIsChecking(false);
@@ -308,14 +395,42 @@ export const useUpdateChecker = (autoCheck: boolean = true) => {
   };
 
   useEffect(() => {
-    if (autoCheck) {
+    // 监听更新状态
+    if (window.electronAPI) {
+      const handleUpdateStatus = (event: any, data: any) => {
+        switch (data.status) {
+          case 'available':
+            setUpdateResult({
+              hasUpdate: true,
+              currentVersion: '1.0.0',
+              latestVersion: data.info.version,
+              updateInfo: {
+                version: data.info.version,
+                releaseDate: data.info.releaseDate,
+                releaseNotes: data.info.releaseNotes || []
+              }
+            });
+            break;
+            
+          case 'not-available':
+            setUpdateResult(null);
+            break;
+        }
+      };
+
+      window.electronAPI.onUpdateStatus(handleUpdateStatus);
+      
+      return () => {
+        window.electronAPI.removeUpdateStatusListener();
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (autoCheck && window.electronAPI) {
       // 延迟5秒后自动检查，避免影响应用启动
       const timer = setTimeout(() => {
-        UpdateService.autoCheckForUpdates().then(result => {
-          if (result?.hasUpdate) {
-            setUpdateResult(result);
-          }
-        });
+        window.electronAPI.checkForUpdates();
       }, 5000);
 
       return () => clearTimeout(timer);

@@ -16,15 +16,15 @@
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build-electron": "npm run build && electron .",
-    "dist": "npm run build && electron-builder",
-    "dist-win": "npm run build && electron-builder --win",
-    "dist-mac": "npm run build && electron-builder --mac",
-    "dist-linux": "npm run build && electron-builder --linux",
+    "dist": "npm run build && electron-builder --win",
+    "build-exe": "npm run build && electron-builder --win",
     "security-check": "node scripts/security-check.js",
     "security-check:ci": "npm run security-check -- --ci",
     "security-check:pre-commit": "npm run security-check -- --pre-commit"
   },
   "dependencies": {
+    "electron-log": "^5.4.2",
+    "electron-updater": "^6.6.2",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -58,6 +58,19 @@
   "build": {
     "appId": "com.wincleaner.app",
     "productName": "WinCleaner",
+    "win": {
+      "signingHashAlgorithms": [
+        "sha1",
+        "sha256"
+      ],
+      "certificateFile": "",
+      "certificatePassword": ""
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Shawn-huang86",
+      "repo": "wincleaner"
+    },
     "directories": {
       "output": "dist-electron"
     },
@@ -73,20 +86,10 @@
       }
     ],
     "win": {
-      "target": "nsis",
-      "icon": "electron/assets/icon.ico",
-      "requestedExecutionLevel": "requireAdministrator"
+      "target": "portable",
+      "icon": "electron/assets/icon.ico"
     },
-    "mac": {
-      "target": "dmg",
-      "icon": "electron/assets/icon.icns",
-      "category": "public.app-category.utilities"
-    },
-    "linux": {
-      "target": "AppImage",
-      "icon": "electron/assets/icon.png",
-      "category": "Utility"
-    },
+
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

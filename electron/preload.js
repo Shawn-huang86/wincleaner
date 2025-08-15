@@ -23,8 +23,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getFileInfo: (filePath) => ipcRenderer.invoke('get-file-info', filePath),
 
   // 更新相关 API
-  downloadUpdate: (url) => ipcRenderer.invoke('download-update', url),
-  installUpdate: (filePath) => ipcRenderer.invoke('install-update', filePath),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  
+  // 监听更新状态
+  onUpdateStatus: (callback) => ipcRenderer.on('update-status', callback),
+  removeUpdateStatusListener: () => ipcRenderer.removeAllListeners('update-status'),
 
   // 监听主进程消息
   onQuickScan: (callback) => ipcRenderer.on('quick-scan', callback),

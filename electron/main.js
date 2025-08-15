@@ -1,10 +1,61 @@
-const { app, BrowserWindow, Menu, shell, ipcMain, dialog, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain, dialog, Tray, nativeImage, autoUpdater } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const https = require('https');
 const { exec } = require('child_process');
 const isDev = process.env.NODE_ENV === 'development';
+const log = require('electron-log');
+
+// 配置自动更新日志
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+
+// 自动更新事件处理
+autoUpdater.on('checking-for-update', () => {
+  log.info('正在检查更新...');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'checking' });
+  }
+});
+
+autoUpdater.on('update-available', (info) => {
+  log.info('发现新版本:', info);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'available', info });
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  log.info('当前已是最新版本');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'not-available', info });
+  }
+});
+
+autoUpdater.on('error', (err) => {
+  log.error('自动更新错误:', err);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'error', error: err.message });
+  }
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "下载速度: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - 已下载 ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  log.info(log_message);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'downloading', progress: progressObj });
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('更新下载完成');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'downloaded', info });
+  }
+});
 
 let mainWindow;
 let tray;
@@ -183,8 +234,18 @@ function createMenu() {
         {
           label: '检查更新',
           click: () => {
-            // 发送检查更新消息到渲染进程
-            mainWindow.webContents.send('check-for-updates');
+            // 使用electron-updater检查更新
+            if (isDev) {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: '开发模式',
+                message: '开发模式下不检查更新',
+                buttons: ['确定']
+              });
+            } else {
+              log.info('用户手动检查更新...');
+              autoUpdater.checkForUpdatesAndNotify();
+            }
           }
         }
       ]
@@ -200,6 +261,15 @@ app.whenReady().then(() => {
   createWindow();
   createMenu();
   createTray();
+  
+  // 初始化自动更新（仅在生产环境中启用）
+  if (!isDev) {
+    // 延迟5秒后检查更新，确保应用完全启动
+    setTimeout(() => {
+      log.info('开始检查更新...');
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 5000);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -368,15 +438,33 @@ ipcMain.handle('download-update', async (event, url) => {
   }
 });
 
-// 安装更新
-ipcMain.handle('install-update', async (event, filePath) => {
+// 手动检查更新
+ipcMain.handle('check-for-updates', async () => {
   try {
-    console.log('🔧 开始安装更新:', filePath);
-    
-    // 检查文件是否存在
-    if (!fs.existsSync(filePath)) {
-      throw new Error('安装文件不存在');
+    if (isDev) {
+      return { success: false, error: '开发模式下不检查更新' };
     }
+    
+    log.info('渲染进程请求检查更新...');
+    autoUpdater.checkForUpdatesAndNotify();
+    return { success: true };
+  } catch (error) {
+    log.error('检查更新失败:', error);
+    return {
+      success: false,
+      error: error.message || '检查更新失败'
+    };
+  }
+});
+
+// 安装下载的更新
+ipcMain.handle('install-update', async () => {
+  try {
+    if (isDev) {
+      return { success: false, error: '开发模式下不安装更新' };
+    }
+    
+    log.info('用户确认安装更新...');
     
     // 显示确认对话框
     const result = await dialog.showMessageBox(mainWindow, {
@@ -393,15 +481,15 @@ ipcMain.handle('install-update', async (event, filePath) => {
       return { success: false, error: '用户取消安装' };
     }
     
-    // 执行安装
-    await installUpdateFile(filePath);
+    // 安装更新并重启应用
+    autoUpdater.quitAndInstall();
     
     return { success: true };
   } catch (error) {
-    console.error('❌ 安装失败:', error);
+    log.error('安装更新失败:', error);
     return {
       success: false,
-      error: error.message || '安装失败'
+      error: error.message || '安装更新失败'
     };
   }
 });

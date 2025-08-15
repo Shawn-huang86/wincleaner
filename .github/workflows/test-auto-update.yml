@@ -1,0 +1,106 @@
+name: Test Auto Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: '测试类型'
+        required: true
+        default: 'build'
+        type: choice
+        options:
+        - build
+        - update
+
+jobs:
+  test-build:
+    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Test build configuration
+      run: |
+        echo "Testing build configuration..."
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          echo "Testing Windows build..."
+          npm run dist-win
+        elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+          echo "Testing macOS build..."
+          npm run dist-mac
+        else
+          echo "Testing Linux build..."
+          npm run dist-linux
+        fi
+      shell: bash
+      
+    - name: Check auto-update configuration
+      run: |
+        echo "Checking auto-update configuration..."
+        
+        # 检查package.json中的publish配置
+        if grep -q '"publish"' package.json; then
+          echo "✅ Publish configuration found in package.json"
+        else
+          echo "❌ Publish configuration not found in package.json"
+          exit 1
+        fi
+        
+        # 检查electron-updater依赖
+        if grep -q '"electron-updater"' package.json; then
+          echo "✅ electron-updater dependency found"
+        else
+          echo "❌ electron-updater dependency not found"
+          exit 1
+        fi
+        
+        # 检查electron-log依赖
+        if grep -q '"electron-log"' package.json; then
+          echo "✅ electron-log dependency found"
+        else
+          echo "❌ electron-log dependency not found"
+          exit 1
+        fi
+        
+        # 检查main.js中的autoUpdater配置
+        if grep -q 'autoUpdater' electron/main.js; then
+          echo "✅ autoUpdater configuration found in main.js"
+        else
+          echo "❌ autoUpdater configuration not found in main.js"
+          exit 1
+        fi
+        
+        # 检查preload.js中的更新API
+        if grep -q 'checkForUpdates' electron/preload.js; then
+          echo "✅ Update API found in preload.js"
+        else
+          echo "❌ Update API not found in preload.js"
+          exit 1
+        fi
+        
+        echo "✅ All auto-update configurations are valid"
+      shell: bash
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: build-artifacts-${{ matrix.os }}
+        path: |
+          dist-electron/
+          dist/
+        retention-days: 7
