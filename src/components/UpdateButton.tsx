@@ -14,7 +14,7 @@ export const UpdateButton: React.FC<UpdateButtonProps> = ({
   const { updateResult, isChecking, checkForUpdates } = useUpdateChecker(false);
 
   const handleClick = async () => {
-    if (updateResult?.hasUpdate && updateResult.updateInfo) {
+    if (updateResult?.hasUpdate && updateResult.updateInfo?.downloadUrl) {
       // 如果有更新，直接打开下载页面
       const { UpdateService } = await import('../services/updateService');
       await UpdateService.openDownloadPage(updateResult.updateInfo.downloadUrl);
