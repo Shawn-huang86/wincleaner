@@ -1,4 +1,5 @@
-const { app, BrowserWindow, Menu, shell, ipcMain, dialog, Tray, nativeImage, autoUpdater } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain, dialog, Tray, nativeImage } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
