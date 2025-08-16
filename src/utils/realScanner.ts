@@ -101,30 +101,31 @@ export class RealScanner {
     try {
       const tempDirs = await FileService.getTempDirectories();
       const defaultPaths = FileService.getDefaultScanPaths();
-      
+
       let allPaths = [...new Set([...tempDirs, ...defaultPaths])];
 
       // 根据扫描类型过滤路径
       if (scanType === 'chat-only') {
         // 只扫描聊天软件相关目录
-        allPaths = allPaths.filter(path => 
-          path.includes('WeChat') || 
-          path.includes('Tencent') || 
-          path.includes('QQ')
-        );
+        allPaths = allPaths.filter(path => this.isPathChatRelated(path));
       } else if (scanType === 'exclude-chat') {
         // 排除聊天软件目录
-        allPaths = allPaths.filter(path => 
-          !path.includes('WeChat') && 
-          !path.includes('Tencent') && 
-          !path.includes('QQ')
-        );
+        allPaths = allPaths.filter(path => !this.isPathChatRelated(path));
       }
 
       return allPaths;
     } catch (error) {
       console.warn('获取扫描路径失败，使用默认路径:', error);
-      return FileService.getDefaultScanPaths();
+      let fallbackPaths = FileService.getDefaultScanPaths();
+
+      // 对回退路径也应用相同的过滤逻辑
+      if (scanType === 'chat-only') {
+        fallbackPaths = fallbackPaths.filter(path => this.isPathChatRelated(path));
+      } else if (scanType === 'exclude-chat') {
+        fallbackPaths = fallbackPaths.filter(path => !this.isPathChatRelated(path));
+      }
+
+      return fallbackPaths;
     }
   }
 
@@ -140,7 +141,7 @@ export class RealScanner {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       try {
         const scanItem: ScanItem = {
           id: `real-${i}`,
@@ -155,6 +156,15 @@ export class RealScanner {
           lastModified: new Date(file.lastModified),
           isChatFile: this.isChatFile(file.path)
         };
+
+        // 根据扫描类型进行二次过滤（防止路径过滤遗漏）
+        if (scanType === 'exclude-chat' && scanItem.isChatFile) {
+          // 基础清理模式：跳过所有聊天文件
+          continue;
+        } else if (scanType === 'chat-only' && !scanItem.isChatFile) {
+          // 聊天清理模式：只保留聊天文件
+          continue;
+        }
 
         // 应用时间筛选（如果是聊天文件）
         if (scanItem.isChatFile && this.shouldExcludeByTime(scanItem, chatSettings)) {
@@ -277,11 +287,49 @@ export class RealScanner {
   }
 
   /**
+   * 检查路径是否与聊天软件相关
+   */
+  private static isPathChatRelated(path: string): boolean {
+    const lowerPath = path.toLowerCase();
+
+    // 聊天软件相关路径模式
+    const chatPathPatterns = [
+      'wechat',
+      'tencent',
+      'qq',
+      'dingtalk'
+    ];
+
+    return chatPathPatterns.some(pattern => lowerPath.includes(pattern));
+  }
+
+  /**
    * 检查是否为聊天文件
    */
   private static isChatFile(filePath: string): boolean {
     const lowerPath = filePath.toLowerCase();
-    return lowerPath.includes('wechat') || lowerPath.includes('qq') || lowerPath.includes('tencent');
+
+    // 更精确的聊天软件路径匹配
+    const chatPatterns = [
+      // 微信相关路径
+      '\\wechat\\',
+      '\\wechatfiles\\',
+      '\\wechat files\\',
+      'appdata\\roaming\\tencent\\wechat',
+      'appdata\\local\\tencent\\wechat',
+
+      // QQ相关路径
+      '\\tencent\\qq\\',
+      '\\tencent files\\',
+      'appdata\\roaming\\tencent\\qq',
+      'appdata\\local\\tencent\\qq',
+
+      // 钉钉相关路径
+      '\\dingtalk\\',
+      'appdata\\local\\dingtalk'
+    ];
+
+    return chatPatterns.some(pattern => lowerPath.includes(pattern));
   }
 
   /**
