@@ -1,6 +1,6 @@
 import React from 'react';
 import { RefreshCw, Download } from 'lucide-react';
-import { useUpdateChecker } from './UpdateNotification';
+import { useUpdateChecker } from '../hooks/useUpdateChecker';
 
 interface UpdateButtonProps {
   className?: string;

@@ -1,15 +1,4 @@
 // 文件操作服务 - 与Electron主进程通信
-declare global {
-  interface Window {
-    electronAPI: {
-      scanJunkFiles: (options: ScanOptions) => Promise<ScanResponse>;
-      deleteFiles: (filePaths: string[]) => Promise<DeleteResponse>;
-      getTempDirs: () => Promise<TempDirsResponse>;
-      fileExists: (filePath: string) => Promise<FileExistsResponse>;
-      getFileInfo: (filePath: string) => Promise<FileInfoResponse>;
-    };
-  }
-}
 
 export interface ScanOptions {
   paths: string[];

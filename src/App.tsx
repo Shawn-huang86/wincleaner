@@ -10,7 +10,8 @@ import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
 import { CleaningProgress } from './components/CleaningProgress';
-import { UpdateNotification, useUpdateChecker } from './components/UpdateNotification';
+import { UpdateNotification } from './components/UpdateNotification';
+import { useUpdateChecker } from './hooks/useUpdateChecker';
 
 
 import { ScanItem, ScanProgress, ChatFileSettings } from './types';

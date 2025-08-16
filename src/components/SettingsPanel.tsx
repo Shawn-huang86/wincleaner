@@ -3,7 +3,8 @@ import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain, Lock, Re
 import { ChatFileSettings as ChatFileSettingsType } from '../types';
 import { AIConfigPanel } from './AIConfigPanel';
 import { PermissionStatus } from './PermissionStatus';
-import { UpdateNotification, useUpdateChecker } from './UpdateNotification';
+import { UpdateNotification } from './UpdateNotification';
+import { useUpdateChecker } from '../hooks/useUpdateChecker';
 import { UpdateHelp } from './UpdateHelp';
 import { UpdateConfigWizard } from './UpdateConfigWizard';
 

@@ -64,7 +64,9 @@
         "sha256"
       ],
       "certificateFile": "",
-      "certificatePassword": ""
+      "certificatePassword": "",
+      "target": "portable",
+      "icon": "electron/assets/icon.ico"
     },
     "publish": {
       "provider": "github",
@@ -85,11 +87,6 @@
         "to": "assets"
       }
     ],
-    "win": {
-      "target": "portable",
-      "icon": "electron/assets/icon.ico"
-    },
-
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

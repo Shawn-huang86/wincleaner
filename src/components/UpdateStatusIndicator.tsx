@@ -1,6 +1,6 @@
 import React from 'react';
 import { Download, CheckCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
-import { useUpdateChecker } from './UpdateNotification';
+import { useUpdateChecker } from '../hooks/useUpdateChecker';
 
 interface UpdateStatusIndicatorProps {
   className?: string;
