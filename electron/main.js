@@ -244,8 +244,28 @@ function createMenu() {
                 buttons: ['确定']
               });
             } else {
-              log.info('用户手动检查更新...');
-              autoUpdater.checkForUpdatesAndNotify();
+              try {
+                log.info('用户手动检查更新...');
+                if (typeof autoUpdater.checkForUpdatesAndNotify === 'function') {
+                  autoUpdater.checkForUpdatesAndNotify();
+                } else {
+                  log.warn('autoUpdater.checkForUpdatesAndNotify 不是一个函数');
+                  dialog.showMessageBox(mainWindow, {
+                    type: 'warning',
+                    title: '更新检查',
+                    message: '自动更新功能暂时不可用，请手动访问GitHub下载最新版本。',
+                    buttons: ['确定']
+                  });
+                }
+              } catch (error) {
+                log.error('手动更新检查失败:', error);
+                dialog.showMessageBox(mainWindow, {
+                  type: 'error',
+                  title: '更新检查失败',
+                  message: '检查更新时发生错误，请稍后重试。',
+                  buttons: ['确定']
+                });
+              }
             }
           }
         }
@@ -267,8 +287,16 @@ app.whenReady().then(() => {
   if (!isDev) {
     // 延迟5秒后检查更新，确保应用完全启动
     setTimeout(() => {
-      log.info('开始检查更新...');
-      autoUpdater.checkForUpdatesAndNotify();
+      try {
+        log.info('开始检查更新...');
+        if (typeof autoUpdater.checkForUpdatesAndNotify === 'function') {
+          autoUpdater.checkForUpdatesAndNotify();
+        } else {
+          log.warn('autoUpdater.checkForUpdatesAndNotify 不是一个函数，跳过自动更新检查');
+        }
+      } catch (error) {
+        log.error('自动更新检查失败:', error);
+      }
     }, 5000);
   }
 
@@ -447,8 +475,13 @@ ipcMain.handle('check-for-updates', async () => {
     }
     
     log.info('渲染进程请求检查更新...');
-    autoUpdater.checkForUpdatesAndNotify();
-    return { success: true };
+    if (typeof autoUpdater.checkForUpdatesAndNotify === 'function') {
+      autoUpdater.checkForUpdatesAndNotify();
+      return { success: true };
+    } else {
+      log.warn('autoUpdater.checkForUpdatesAndNotify 不是一个函数');
+      return { success: false, error: '自动更新功能不可用' };
+    }
   } catch (error) {
     log.error('检查更新失败:', error);
     return {
