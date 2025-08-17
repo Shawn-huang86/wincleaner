@@ -150,7 +150,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <span className="text-xs text-gray-500">系统状态</span>
         </div>
         <div className="space-y-1">
-          <div className="text-lg font-bold text-gray-900">
+          <div className="text-lg font-bold text-gray-900 whitespace-nowrap">
             {scanResults.length > 0 ? formatFileSize(totalSize) : '待扫描'}
           </div>
           <div className="text-xs text-gray-600">
@@ -174,7 +174,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <span className="text-xs text-gray-500">清理统计</span>
         </div>
         <div className="space-y-1">
-          <div className="text-lg font-bold text-gray-900">
+          <div className="text-lg font-bold text-gray-900 whitespace-nowrap">
             {formatFileSize(totalHistorySpace)}
           </div>
           <div className="text-xs text-gray-600">

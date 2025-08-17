@@ -15,6 +15,7 @@ export interface RegistryItem {
   reason: string;
   lastModified?: Date;
   confidence: number;
+  size: number; // 注册表项的估算大小（字节）
 }
 
 /**
@@ -145,7 +146,8 @@ export class RegistryScanner {
           riskLevel: 'safe',
           canDelete: true,
           reason: '软件已卸载但卸载信息仍存在',
-          confidence: 0.9
+          confidence: 0.9,
+          size: 2048 // 2KB
         },
         {
           id: 'reg-uninstall-2',
@@ -157,7 +159,8 @@ export class RegistryScanner {
           riskLevel: 'safe',
           canDelete: true,
           reason: '软件升级后的旧版本信息',
-          confidence: 0.85
+          confidence: 0.85,
+          size: 1536 // 1.5KB
         }
       ],
 
@@ -174,7 +177,8 @@ export class RegistryScanner {
           riskLevel: 'safe',
           canDelete: true,
           reason: '指向的程序文件不存在',
-          confidence: 0.95
+          confidence: 0.95,
+          size: 512 // 512B
         },
         {
           id: 'reg-startup-2',
@@ -188,7 +192,8 @@ export class RegistryScanner {
           riskLevel: 'caution',
           canDelete: true,
           reason: '更新程序可能不再需要',
-          confidence: 0.7
+          confidence: 0.7,
+          size: 768 // 768B
         }
       ],
 
@@ -203,7 +208,8 @@ export class RegistryScanner {
           riskLevel: 'safe',
           canDelete: true,
           reason: '关联的程序已不存在',
-          confidence: 0.8
+          confidence: 0.8,
+          size: 256 // 256B
         }
       ],
 
@@ -218,7 +224,8 @@ export class RegistryScanner {
           riskLevel: 'caution',
           canDelete: true,
           reason: '服务对应的程序已被卸载',
-          confidence: 0.9
+          confidence: 0.9,
+          size: 1024 // 1KB
         }
       ],
 
@@ -233,7 +240,8 @@ export class RegistryScanner {
           riskLevel: 'safe',
           canDelete: true,
           reason: '软件配置信息残留',
-          confidence: 0.75
+          confidence: 0.75,
+          size: 3072 // 3KB
         }
       ]
     };

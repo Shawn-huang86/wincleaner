@@ -205,13 +205,9 @@ export class FileService {
    * 格式化文件大小
    */
   static formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    // 复用全局 helpers，保持格式一致
+    const { formatFileSize } = require('../utils/helpers');
+    return formatFileSize(bytes);
   }
 
   /**

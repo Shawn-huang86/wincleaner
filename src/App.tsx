@@ -322,15 +322,17 @@ function App() {
 
       // 转换软件残留为 ScanItem 格式
       for (const remnant of softwareRemnants) {
+        const sizeBytes = remnant.size || 0;
         const scanItem: ScanItem = {
           id: `software-${remnant.id}`,
           name: remnant.name,
           path: remnant.path,
-          size: remnant.size,
+          size: formatFileSize(sizeBytes),
+          sizeBytes,
           category: 'software-remnant',
           type: remnant.type === 'file' ? 'file' : 'folder',
           lastModified: new Date(),
-          canDelete: remnant.safeToDelete,
+          canDelete: remnant.canDelete,
           description: `${remnant.relatedSoftware} 的残留${remnant.type === 'file' ? '文件' : '文件夹'}`
         };
         allResults.push(scanItem);
@@ -357,15 +359,17 @@ function App() {
 
       // 转换注册表残留为 ScanItem 格式
       for (const registry of registryRemnants) {
+        const sizeBytes = registry.size || 1024;
         const scanItem: ScanItem = {
           id: `registry-${registry.id}`,
-          name: registry.keyName,
+          name: registry.keyPath.split('\\').pop() || registry.keyPath,
           path: registry.keyPath,
-          size: registry.estimatedSize || 1024, // 注册表项估算大小
+          size: formatFileSize(sizeBytes),
+          sizeBytes,
           category: 'registry-remnant',
           type: 'registry',
           lastModified: new Date(),
-          canDelete: registry.safeToDelete,
+          canDelete: registry.canDelete,
           description: `${registry.relatedSoftware} 的注册表残留`
         };
         allResults.push(scanItem);
@@ -392,15 +396,17 @@ function App() {
 
       // 转换隐私数据为 ScanItem 格式
       for (const privacy of privacyData) {
+        const sizeBytes = privacy.size || 0;
         const scanItem: ScanItem = {
           id: `privacy-${privacy.id}`,
           name: privacy.name,
           path: privacy.path,
-          size: privacy.size,
+          size: formatFileSize(sizeBytes),
+          sizeBytes,
           category: 'privacy-data',
-          type: privacy.type === 'file' ? 'file' : 'folder',
+          type: 'file', // 隐私数据通常是文件或注册表项
           lastModified: new Date(),
-          canDelete: privacy.safeToDelete,
+          canDelete: privacy.canDelete,
           description: privacy.description
         };
         allResults.push(scanItem);

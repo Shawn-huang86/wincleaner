@@ -100,7 +100,7 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
       ...item,
       type: 'registry' as const,
       relatedSoftware: item.relatedSoftware || 'Unknown',
-      size: 0
+      size: item.size || 1024 // 使用实际大小或默认1KB
     }));
 
     // 将隐私数据项转换为统一格式
@@ -211,7 +211,9 @@ export const SoftwareRemnantCleaner: React.FC<SoftwareRemnantCleanerProps> = ({ 
     privacy: privacyItems.length,
     shortcuts: remnants.filter(r => r.type === 'shortcut').length,
     services: remnants.filter(r => r.type === 'service').length,
-    totalSize: remnants.reduce((sum, r) => sum + (r.size || 0), 0) + privacyItems.reduce((sum, p) => sum + p.size, 0),
+    totalSize: remnants.reduce((sum, r) => sum + (r.size || 0), 0) +
+               registryItems.reduce((sum, r) => sum + (r.size || 0), 0) +
+               privacyItems.reduce((sum, p) => sum + p.size, 0),
     canDelete: filteredItems.filter(item => item.canDelete).length
   };
 

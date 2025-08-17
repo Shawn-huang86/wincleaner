@@ -3,6 +3,8 @@ import { Download, X, RefreshCw, AlertCircle, CheckCircle, HelpCircle, Loader2 }
 import { UpdateGuide } from './UpdateGuide';
 import { useUpdateChecker } from '../hooks/useUpdateChecker';
 import { UpdateInfo, UpdateStatusData, ElectronAPI, UpdateCheckResult } from '../types/updateTypes';
+import { formatFileSize } from '../utils/helpers';
+
 
 interface UpdateNotificationProps {
   onClose?: () => void;
@@ -27,7 +29,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
     if (window.electronAPI) {
       window.electronAPI.onUpdateStatus(handleUpdateStatus);
     }
-    
+
     return () => {
       if (window.electronAPI) {
         window.electronAPI.removeUpdateStatusListener();
@@ -47,7 +49,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
 
   const checkForUpdates = async () => {
     if (!window.electronAPI) return;
-    
+
     setIsChecking(true);
     try {
       const result = await window.electronAPI.checkForUpdates();
@@ -63,13 +65,13 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
 
   const handleUpdateStatus = (_event: CustomEvent<UpdateStatusData>, data: UpdateStatusData) => {
     console.log('更新状态:', data);
-    
+
     switch (data.status) {
       case 'checking':
         setIsChecking(true);
         setStatusMessage('正在检查更新...');
         break;
-        
+
       case 'available':
         setIsChecking(false);
         setShowNotification(true);
@@ -86,14 +88,14 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
           });
         }
         break;
-        
+
       case 'not-available':
         setIsChecking(false);
         setShowNotification(false);
         setStatusMessage('当前已是最新版本');
         setTimeout(() => setStatusMessage(''), 3000);
         break;
-        
+
       case 'downloading':
         setUpdateStatus('downloading');
         if (data.progress) {
@@ -101,12 +103,12 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
           setStatusMessage(`正在下载更新... ${Math.round(data.progress.percent)}%`);
         }
         break;
-        
+
       case 'downloaded':
         setUpdateStatus('idle');
         setStatusMessage('更新下载完成，点击安装');
         break;
-        
+
       case 'error':
         setIsChecking(false);
         setUpdateStatus('error');
@@ -118,19 +120,19 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
 
   const handleDownload = async () => {
     if (!window.electronAPI) return;
-    
+
     try {
       setUpdateStatus('installing');
       setStatusMessage('正在安装更新...');
       setErrorMessage('');
-      
+
       // 安装更新
       await window.electronAPI.installUpdate('');
-      
+
       // 如果没有抛出异常，说明安装成功
       setUpdateStatus('completed');
       setStatusMessage('更新完成！应用将重启...');
-      
+
       // 延迟关闭通知
       setTimeout(() => {
         handleClose();
@@ -170,14 +172,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
 
   const { updateInfo } = updateResult;
 
-  // 格式化文件大小
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  // 使用全局 helpers 的格式化（已在顶部导入）
 
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm">
@@ -256,14 +251,14 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
                 <span>{downloadProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${downloadProgress}%` }}
                 ></div>
               </div>
             </div>
           )}
-          
+
           {/* 状态消息 */}
           {updateStatus === 'installing' && (
             <div className="flex items-center justify-center gap-2 text-sm text-blue-600 py-2">
@@ -271,7 +266,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               <span>{statusMessage}</span>
             </div>
           )}
-          
+
           {/* 完成消息 */}
           {updateStatus === 'completed' && (
             <div className="flex items-center justify-center gap-2 text-sm text-green-600 py-2">
@@ -279,7 +274,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               <span>{statusMessage}</span>
             </div>
           )}
-          
+
           {/* 错误消息 */}
           {updateStatus === 'error' && (
             <div className="space-y-2">
@@ -294,7 +289,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               )}
             </div>
           )}
-          
+
           {/* 操作按钮 */}
           {updateStatus === 'idle' && (
             <div className="flex gap-2">
@@ -317,7 +312,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               </button>
             </div>
           )}
-          
+
           {/* 错误状态下的按钮 */}
           {updateStatus === 'error' && (
             <div className="flex gap-2">
@@ -338,7 +333,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
               </button>
             </div>
           )}
-          
+
           {/* 帮助链接 */}
           <div className="flex justify-center">
             <button

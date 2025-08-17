@@ -118,8 +118,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
     return categories.map(cat => {
       const categoryItems = filteredResults.filter(item => item.category === cat.category);
       const deletableItems = categoryItems.filter(item => item.canDelete !== false);
-      const totalSize = categoryItems.reduce((sum, item) => sum + item.size, 0);
-      const deletableSize = deletableItems.reduce((sum, item) => sum + item.size, 0);
+      const totalSize = categoryItems.reduce((sum, item) => sum + item.sizeBytes, 0);
+      const deletableSize = deletableItems.reduce((sum, item) => sum + item.sizeBytes, 0);
       return {
         ...cat,
         count: categoryItems.length,
@@ -252,7 +252,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
   const selectedCount = selectedItems.size;
   const selectedSize = results
     .filter(item => selectedItems.has(item.id))
-    .reduce((total, item) => total + item.size, 0);
+    .reduce((total, item) => total + item.sizeBytes, 0);
 
   // 计算当前筛选结果中的选中项数量（用于清理按钮）
   const filteredSelectedCount = filteredResults
@@ -267,7 +267,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-gray-900">扫描结果</h3>
             <span className="text-sm text-gray-500">
-              共 {results.length} 项，{formatFileSize(results.reduce((total, item) => total + item.size, 0))}
+              共 {results.length} 项，{formatFileSize(results.reduce((total, item) => total + item.sizeBytes, 0))}
             </span>
           </div>
 

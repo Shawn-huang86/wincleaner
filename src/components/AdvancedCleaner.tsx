@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, Trash2, AlertTriangle, CheckCircle, RefreshCw, Filter, Shield, Zap, Database, Lock, Wifi, HardDrive } from 'lucide-react';
-import { 
-  AdvancedCleanerManager, 
-  AdvancedCleaningItem, 
-  AdvancedCleaningCategory, 
+import {
+  AdvancedCleanerManager,
+  AdvancedCleaningItem,
+  AdvancedCleaningCategory,
   AdvancedCleaningStats,
   AdvancedCleaningProgress,
   AdvancedCleaningResult
 } from '../services/advancedCleanerManager';
+import { formatFileSize } from '../utils/helpers';
+
 
 interface AdvancedCleanerProps {
   isOpen: boolean;
@@ -76,9 +78,9 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
         itemsToClean,
         (progress) => setScanProgress(progress)
       );
-      
+
       setCleaningResult(result);
-      
+
       // 重新扫描以更新列表
       if (result.success) {
         setTimeout(() => {
@@ -168,13 +170,7 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  // 使用全局 helpers 的格式化（已在顶部导入）
 
   const filteredItems = getFilteredItems();
   const selectedCount = selectedItems.size;
@@ -235,7 +231,7 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
               <span className="text-sm text-blue-700">{scanProgress.overallProgress}%</span>
             </div>
             <div className="w-full bg-blue-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${scanProgress.overallProgress}%` }}
               ></div>
@@ -379,11 +375,11 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
                       disabled={!item.canDelete}
                       className="mr-3"
                     />
-                    
+
                     <div className="flex items-center mr-3">
                       {getCategoryIcon(item.category)}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center">
                         <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
@@ -394,7 +390,7 @@ export const AdvancedCleaner: React.FC<AdvancedCleanerProps> = ({ isOpen, onClos
                       <p className="text-sm text-gray-600 truncate">{item.description}</p>
                       <p className="text-xs text-gray-500 truncate">{item.path}</p>
                     </div>
-                    
+
                     <div className="text-right">
                       <div className="text-sm font-medium text-gray-900">{formatFileSize(item.size)}</div>
                       <div className="text-xs text-gray-500">

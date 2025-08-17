@@ -135,7 +135,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
         {/* 扫描结果卡片 */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 border border-blue-200">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-2 border border-blue-200 overflow-hidden">
           <div className="flex items-center justify-between mb-1.5">
             <div className="bg-blue-100 p-1.5 rounded-md">
               <HardDrive className="w-4 h-4 text-blue-600" />
@@ -143,7 +143,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
             <span className="text-xs text-blue-600 font-medium">扫描结果</span>
           </div>
           <div className="space-y-1">
-            <div className="text-xl font-bold text-gray-900">
+            <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
               {scanResults.length > 0 ? formatFileSize(totalSize) : '待扫描'}
             </div>
             <div className="text-sm text-gray-700">
@@ -165,7 +165,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
         </div>
 
         {/* 清理统计卡片 */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-2 border border-green-200">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-2 border border-green-200 overflow-hidden">
           <div className="flex items-center justify-between mb-1.5">
             <div className="bg-green-100 p-1.5 rounded-md">
               <TrendingUp className="w-4 h-4 text-green-600" />
@@ -173,7 +173,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
             <span className="text-xs text-green-600 font-medium">清理统计</span>
           </div>
           <div className="space-y-1">
-            <div className="text-xl font-bold text-gray-900">
+            <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
               {formatFileSize(totalHistorySpace)}
             </div>
             <div className="text-sm text-gray-700">
@@ -194,7 +194,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
         </div>
 
         {/* 安全评估卡片 */}
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-2 border border-yellow-200">
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-2 border border-yellow-200 overflow-hidden">
           <div className="flex items-center justify-between mb-1.5">
             <div className="bg-yellow-100 p-1.5 rounded-md">
               <Shield className="w-4 h-4 text-yellow-600" />
@@ -202,7 +202,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
             <span className="text-xs text-yellow-600 font-medium">安全评估</span>
           </div>
           <div className="space-y-1">
-            <div className="text-xl font-bold text-gray-900">
+            <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
               {scanResults.length > 0 ? `${Math.round((riskCounts.low || 0) / scanResults.length * 100)}%` : '100%'}
             </div>
             <div className="text-sm text-gray-700">
@@ -241,7 +241,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
         </div>
 
         {/* 快速操作卡片 */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 border border-purple-200">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-2 border border-purple-200 overflow-hidden">
           <div className="flex items-center justify-between mb-1.5">
             <div className="bg-purple-100 p-1.5 rounded-md">
               <Zap className="w-4 h-4 text-purple-600" />
@@ -249,7 +249,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
             <span className="text-xs text-purple-600 font-medium">快速操作</span>
           </div>
           <div className="space-y-1">
-            <div className="text-xl font-bold text-gray-900">
+            <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
               {selectedItems.size}
             </div>
             <div className="text-sm text-gray-700">
