@@ -227,7 +227,7 @@ function createMenu() {
               type: 'info',
               title: '关于 WinCleaner',
               message: 'WinCleaner Pro',
-              detail: '智能垃圾清理工具\n版本: 1.0.0\n\n安全、高效、智能的系统清理解决方案',
+              detail: `智能垃圾清理工具\n版本: ${app.getVersion()}\n\n安全、高效、智能的系统清理解决方案`,
               buttons: ['确定']
             });
           }

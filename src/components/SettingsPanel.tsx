@@ -400,7 +400,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             <div className="ml-10 space-y-3">
               <div className="text-sm text-gray-600 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span>WinCleaner v1.1.0</span>
+                  <span>WinCleaner v{updateResult?.currentVersion || '1.3.1'}</span>
                   {updateResult?.hasUpdate && (
                     <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
                       有新版本

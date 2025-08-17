@@ -76,7 +76,7 @@ export const UpdateNotification: React.FC<UpdateNotificationProps> = ({
         if (data.info) {
           setUpdateResult({
             hasUpdate: true,
-            currentVersion: '1.0.0', // 这里应该从应用信息获取
+            currentVersion: data.currentVersion || '1.3.1',
             latestVersion: data.info.version,
             updateInfo: {
               version: data.info.version,

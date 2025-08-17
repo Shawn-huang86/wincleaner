@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UpdateCheckResult, UpdateInfo, UpdateStatusData, ElectronAPI } from '../types/updateTypes';
+import { UpdateService } from '../services/updateService';
 
 /**
  * 更新检查Hook
@@ -9,13 +10,20 @@ export const useUpdateChecker = (autoCheck: boolean = true) => {
   const [isChecking, setIsChecking] = useState(false);
 
   const checkForUpdates = async () => {
-    if (!window.electronAPI) return null;
-    
     setIsChecking(true);
     try {
-      const result = await window.electronAPI.checkForUpdates();
-      // 注意：这里不直接设置结果，因为结果会通过事件监听器更新
+      // 使用自定义更新服务
+      const result = await UpdateService.checkForUpdates();
+      setUpdateResult(result);
       return result;
+    } catch (error) {
+      console.error('检查更新失败:', error);
+      setUpdateResult({
+        hasUpdate: false,
+        currentVersion: '1.3.1',
+        error: error instanceof Error ? error.message : '检查更新失败'
+      });
+      return null;
     } finally {
       setIsChecking(false);
     }
@@ -30,7 +38,7 @@ export const useUpdateChecker = (autoCheck: boolean = true) => {
             if (data.info) {
               setUpdateResult({
                 hasUpdate: true,
-                currentVersion: '1.0.0',
+                currentVersion: data.currentVersion || '1.3.1',
                 latestVersion: data.info.version,
                 updateInfo: {
                   version: data.info.version,
@@ -56,10 +64,10 @@ export const useUpdateChecker = (autoCheck: boolean = true) => {
   }, []);
 
   useEffect(() => {
-    if (autoCheck && window.electronAPI) {
+    if (autoCheck) {
       // 延迟5秒后自动检查，避免影响应用启动
       const timer = setTimeout(() => {
-        window.electronAPI.checkForUpdates();
+        checkForUpdates();
       }, 5000);
 
       return () => clearTimeout(timer);

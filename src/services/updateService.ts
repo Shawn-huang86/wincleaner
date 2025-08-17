@@ -182,6 +182,13 @@ export class UpdateService {
 
       const data = await response.json();
       console.log(`✅ 成功获取更新信息: ${url}`);
+
+      // 如果是 /releases API，返回第一个非预发布版本
+      if (Array.isArray(data)) {
+        const latestRelease = data.find(release => !release.prerelease) || data[0];
+        return latestRelease;
+      }
+
       return data;
     } catch (error) {
       console.warn(`❌ 更新源访问失败 ${url}:`, error);
@@ -216,16 +223,16 @@ export class UpdateService {
   private static extractVersion(release: ReleaseInfo): string {
     // 自定义API格式
     if ('version' in release && release.version) {
-      return release.version.replace(/^v/, '');
+      return release.version.replace(/^[vV]/, '');
     }
 
     // GitHub API格式
     if ('tag_name' in release && release.tag_name) {
-      return release.tag_name.replace(/^v/, '');
+      return release.tag_name.replace(/^[vV]/, '');
     }
 
     // 其他格式
-    return ('name' in release && release.name) ? release.name.replace(/^v/, '') : '0.0.0';
+    return ('name' in release && release.name) ? release.name.replace(/^[vV]/, '') : '0.0.0';
   }
 
   /**
