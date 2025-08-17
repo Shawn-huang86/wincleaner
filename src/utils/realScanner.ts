@@ -308,9 +308,10 @@ export class RealScanner {
    */
   private static isChatFile(filePath: string): boolean {
     const lowerPath = filePath.toLowerCase();
+    const fileName = lowerPath.split('\\').pop() || '';
 
     // 更精确的聊天软件路径匹配
-    const chatPatterns = [
+    const chatPathPatterns = [
       // 微信相关路径
       '\\wechat\\',
       '\\wechatfiles\\',
@@ -329,7 +330,31 @@ export class RealScanner {
       'appdata\\local\\dingtalk'
     ];
 
-    return chatPatterns.some(pattern => lowerPath.includes(pattern));
+    // 聊天软件文件名模式
+    const chatFilePatterns = [
+      // 微信相关文件名
+      'wechat',
+      'weixin',
+      'wxwork',
+      'tencent',
+
+      // QQ相关文件名
+      'qq',
+      'qqmusic',
+      'qqbrowser',
+
+      // 钉钉相关文件名
+      'dingtalk',
+      'dingding'
+    ];
+
+    // 检查路径是否包含聊天软件目录
+    const hasPathPattern = chatPathPatterns.some(pattern => lowerPath.includes(pattern));
+
+    // 检查文件名是否包含聊天软件关键词
+    const hasFilePattern = chatFilePatterns.some(pattern => fileName.includes(pattern));
+
+    return hasPathPattern || hasFilePattern;
   }
 
   /**
