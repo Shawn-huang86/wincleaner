@@ -29,7 +29,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
 }) => {
 
   return (
-    <div className="w-56 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-56 bg-white border-r border-gray-200 flex flex-col">
       {/* 标题 */}
       <div className="p-2 border-b border-gray-200">
         <div className="flex items-center gap-1.5 mb-1">
@@ -42,7 +42,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
       </div>
 
       {/* 清理功能按钮 - 垂直布局 */}
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+      <div className="flex-1 p-2 pb-12 space-y-2 overflow-visible">
         {/* 快速清理 */}
         <button
           onClick={onStartQuickScan}
@@ -165,7 +165,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
       </div>
 
       {/* 底部状态栏 */}
-      <div className="border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 px-2 py-2 h-[38px]">
+      <div className="border-t border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100 px-2 py-2 shadow-inner h-[38px]">
         <div className="flex items-center justify-between h-full">
           <div className="text-xs text-gray-700">
             <span className="font-medium">清理功能</span>

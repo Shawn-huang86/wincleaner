@@ -795,7 +795,7 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
+    <div className="min-h-screen overflow-auto bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
       {/* 顶部标题栏 - 减少垂直内边距 */}
       <div className="bg-white border-b border-gray-200 px-4 py-1.5">
         <Header
@@ -832,7 +832,7 @@ function App() {
       </div>
 
       {/* 主要内容区域 - 左右两侧完全对称，确保底部对齐 */}
-      <div className="flex flex-1 overflow-hidden items-stretch">
+      <div className="flex flex-1 items-stretch">
         {/* 左侧清理功能栏 */}
         <CleaningSidebar
           onStartQuickScan={() => handleStartScan(false)}
@@ -851,8 +851,8 @@ function App() {
         <div className="flex-1 flex flex-col">
           {/* 主内容区域 - 使用flex-1占据剩余空间，确保StatusBar固定在底部 */}
           <div ref={rightContentRef} className="flex flex-col flex-1">
-            {/* 扫描和结果区域 - 占据剩余空间，减少内边距 */}
-            <div className="flex-1 p-2 pb-0 overflow-hidden">
+            {/* 扫描和结果区域 - 占据剩余空间，减少内边距，为底部状态栏留出空间 */}
+            <div className="flex-1 p-2 pb-20 overflow-auto no-scrollbar">
               <ResultsTable
                 results={scanResults}
                 filteredResults={filteredResults}
@@ -868,15 +868,7 @@ function App() {
               />
             </div>
 
-            {/* 底部状态栏 - 固定在底部，与左侧完美对齐 */}
-            <div className="flex-shrink-0">
-              <StatusBar
-                scanResults={filteredResults}
-                selectedItems={selectedItems}
-                totalSelectedSize={getTotalSelectedSize()}
-                cleaningProgress={{ current: 0, total: 0 }}
-              />
-            </div>
+
           </div>
         </div>
       </div>
@@ -922,9 +914,15 @@ function App() {
       {/* 更新通知 */}
       <UpdateNotification autoCheck={true} />
 
-
-
-
+      {/* 底部状态栏 - 固定在窗口底部 */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <StatusBar
+          scanResults={filteredResults}
+          selectedItems={selectedItems}
+          totalSelectedSize={getTotalSelectedSize()}
+          cleaningProgress={{ current: 0, total: 0 }}
+        />
+      </div>
 
     </div>
   );

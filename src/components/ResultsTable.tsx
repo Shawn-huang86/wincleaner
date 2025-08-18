@@ -157,47 +157,28 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({
       };
     }
 
-    // 扫描后动态调整
+    // 扫描后：优先保持完整信息展示，默认使用非紧凑布局
+    // 仅当高度极端不足时（<200px）才退化到紧凑模式
     const statusBarHeight = 45; // 底部状态栏高度
     const padding = 32; // 上下内边距
     const availableCardHeight = availableHeight - statusBarHeight - padding;
 
-    const categoryCount = categoryStats.length;
-
-    // 根据可用高度和分类数量动态调整
-    if (availableCardHeight < 250) {
-      // 高度很小时，使用超紧凑布局
+    if (availableCardHeight < 200) {
       return {
-        gridCols: 'grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
-        cardHeight: 'h-12',
-        gap: 'gap-1.5',
-        isCompact: true
-      };
-    } else if (availableCardHeight < 350) {
-      // 高度较小时，使用紧凑布局
-      return {
-        gridCols: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
-        cardHeight: 'h-16',
-        gap: 'gap-2',
-        isCompact: true
-      };
-    } else if (availableCardHeight < 450) {
-      // 中等高度，使用中等紧凑布局
-      return {
-        gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+        gridCols: 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4',
         cardHeight: 'h-20',
         gap: 'gap-2.5',
         isCompact: true
       };
-    } else {
-      // 高度充足时使用默认配置
-      return {
-        gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-        cardHeight: 'auto',
-        gap: 'gap-3',
-        isCompact: false
-      };
     }
+
+    // 默认（大多数情况）：非紧凑，展示完整信息
+    return {
+      gridCols: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+      cardHeight: 'auto',
+      gap: 'gap-3',
+      isCompact: false
+    };
   };
 
   const gridConfig = getGridConfig();
