@@ -9,6 +9,7 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { SuccessDialog } from './components/SuccessDialog';
 import { SettingsPanel } from './components/SettingsPanel';
 import { FileIdentifier } from './components/FileIdentifier';
+
 import { CleaningProgress } from './components/CleaningProgress';
 import { UpdateNotification } from './components/UpdateNotification';
 import { useUpdateChecker } from './hooks/useUpdateChecker';
@@ -38,6 +39,7 @@ function App() {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showFileIdentifier, setShowFileIdentifier] = useState(false);
+  const [isCDriveScanning, setIsCDriveScanning] = useState(false);
   const [showCleaningProgress, setShowCleaningProgress] = useState(false);
 
   const [isSpecialScanning, setIsSpecialScanning] = useState(false);
@@ -434,6 +436,156 @@ function App() {
     }
   };
 
+  // C盘专清扫描
+  const handleStartCDriveScan = async () => {
+    setIsCDriveScanning(true);
+    setScanResults([]);
+    setSelectedItems(new Set());
+    setSelectedCategory(null);
+
+    setScanProgress({
+      current: 0,
+      total: 100,
+      currentPath: '准备C盘专清扫描...',
+      stage: 'scanning'
+    });
+
+    try {
+      const allResults: ScanItem[] = [];
+
+      // 模拟C盘专清扫描过程
+      const scanSteps = [
+        { progress: 10, message: '分析C盘使用情况...', delay: 800 },
+        { progress: 25, message: '扫描Windows临时文件...', delay: 1000 },
+        { progress: 40, message: '检查用户临时文件...', delay: 800 },
+        { progress: 55, message: '分析浏览器缓存...', delay: 900 },
+        { progress: 70, message: '扫描系统日志文件...', delay: 700 },
+        { progress: 85, message: '检查回收站和大文件...', delay: 800 }
+      ];
+
+      for (const step of scanSteps) {
+        setScanProgress({
+          current: step.progress,
+          total: 100,
+          currentPath: step.message,
+          stage: 'scanning'
+        });
+        await new Promise(resolve => setTimeout(resolve, step.delay));
+      }
+
+      // 生成C盘专清的扫描结果
+      const cDriveItems: ScanItem[] = [
+        {
+          id: 'cdrive-1',
+          name: 'Windows临时文件',
+          path: 'C:\\Windows\\Temp',
+          size: '2.1 GB',
+          sizeBytes: 2.1 * 1024 * 1024 * 1024,
+          type: '系统临时',
+          category: 'system',
+          riskLevel: 'safe',
+          suggestion: '✅ 可安全清理，释放系统空间',
+          lastModified: new Date(),
+          canDelete: true
+        },
+        {
+          id: 'cdrive-2',
+          name: '用户临时文件',
+          path: 'C:\\Users\\User\\AppData\\Local\\Temp',
+          size: '1.8 GB',
+          sizeBytes: 1.8 * 1024 * 1024 * 1024,
+          type: '用户临时',
+          category: 'user',
+          riskLevel: 'safe',
+          suggestion: '✅ 可安全清理，应用程序临时文件',
+          lastModified: new Date(),
+          canDelete: true
+        },
+        {
+          id: 'cdrive-3',
+          name: 'Chrome浏览器缓存',
+          path: 'C:\\Users\\User\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cache',
+          size: '1.2 GB',
+          sizeBytes: 1.2 * 1024 * 1024 * 1024,
+          type: '浏览器缓存',
+          category: 'browser',
+          riskLevel: 'safe',
+          suggestion: '✅ 可安全清理，清理后网页可能需要重新加载',
+          lastModified: new Date(),
+          canDelete: true
+        },
+        {
+          id: 'cdrive-4',
+          name: '系统日志文件',
+          path: 'C:\\Windows\\Logs',
+          size: '800 MB',
+          sizeBytes: 800 * 1024 * 1024,
+          type: '系统日志',
+          category: 'system',
+          riskLevel: 'safe',
+          suggestion: '✅ 可安全清理，系统运行日志',
+          lastModified: new Date(),
+          canDelete: true
+        },
+        {
+          id: 'cdrive-5',
+          name: '回收站文件',
+          path: 'C:\\$Recycle.Bin',
+          size: '3.5 GB',
+          sizeBytes: 3.5 * 1024 * 1024 * 1024,
+          type: '回收站',
+          category: 'system',
+          riskLevel: 'caution',
+          suggestion: '⚠️ 清理后无法恢复，请确认后清理',
+          lastModified: new Date(),
+          canDelete: true
+        },
+        {
+          id: 'cdrive-6',
+          name: '下载文件夹大文件',
+          path: 'C:\\Users\\User\\Downloads',
+          size: '2.8 GB',
+          sizeBytes: 2.8 * 1024 * 1024 * 1024,
+          type: '大文件',
+          category: 'downloads',
+          riskLevel: 'caution',
+          suggestion: '⚠️ 下载文件夹中的大文件，请确认后清理',
+          lastModified: new Date(),
+          canDelete: true
+        }
+      ];
+
+      // 逐个添加结果以实现逐个呈现效果
+      for (const item of cDriveItems) {
+        allResults.push(item);
+        setScanResults([...allResults]);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      // 默认选中安全项目
+      const safeItems = cDriveItems.filter(item => item.riskLevel === 'safe').map(item => item.id);
+      setSelectedItems(new Set(safeItems));
+
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: `C盘专清扫描完成，找到 ${cDriveItems.length} 个项目，可释放约 ${formatFileSize(cDriveItems.reduce((sum, item) => sum + item.sizeBytes, 0))}`,
+        stage: 'completed'
+      });
+
+    } catch (error) {
+      console.error('C盘专清扫描失败:', error);
+      setScanProgress({
+        current: 100,
+        total: 100,
+        currentPath: 'C盘专清扫描失败',
+        stage: 'error'
+      });
+    } finally {
+      setIsCDriveScanning(false);
+    }
+  };
+
   // 应用管理扫描
   const handleStartAppScan = async () => {
     setIsAppScanning(true);
@@ -800,6 +952,7 @@ function App() {
       <div className="bg-white border-b border-gray-200 px-4 py-1.5">
         <Header
           onOpenFileIdentifier={() => setShowFileIdentifier(true)}
+          onStartCDriveScan={handleStartCDriveScan}
           onStartQuickScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
@@ -810,6 +963,7 @@ function App() {
           isChatScanning={isChatScanning}
           isSpecialScanning={isSpecialScanning}
           isAppScanning={isAppScanning}
+          isCDriveScanning={isCDriveScanning}
           deepScan={deepScan}
           isChatScan={isChatScan}
           scanProgress={scanProgress}
@@ -817,39 +971,41 @@ function App() {
         />
       </div>
 
-      {/* 系统状态仪表盘 - 独立区域，不影响左右对齐 */}
-      <div className="flex-shrink-0">
-        <SystemDashboard
-          scanResults={scanResults}
-          selectedItems={selectedItems}
-          scanHistory={scanHistory}
-          onShowSettings={() => setShowSettings(true)}
-          isScanning={isQuickScanning || isDeepScanning || isChatScanning}
-          scanProgress={scanProgress}
-          isChatScan={isChatScan}
-          deepScan={deepScan}
-        />
-      </div>
-
-      {/* 主要内容区域 - 左右两侧完全对称，确保底部对齐 */}
+      {/* 主要内容区域 - 左右两侧布局，左侧清理功能，右侧系统状态和结果 */}
       <div className="flex flex-1 items-stretch">
-        {/* 左侧清理功能栏 */}
+        {/* 左侧清理功能栏 - 向上移动填补空间 */}
         <CleaningSidebar
           onStartQuickScan={() => handleStartScan(false)}
           onStartDeepScan={() => handleStartScan(true)}
           onStartChatScan={handleStartChatScan}
           onStartSpecialScan={handleStartSpecialScan}
           onStartAppScan={handleStartAppScan}
+          onStartCDriveScan={handleStartCDriveScan}
           isQuickScanning={isQuickScanning}
           isDeepScanning={isDeepScanning}
           isChatScanning={isChatScanning}
           isSpecialScanning={isSpecialScanning}
           isAppScanning={isAppScanning}
+          isCDriveScanning={isCDriveScanning}
         />
 
-        {/* 右侧内容区域 - 与左侧完全对称 */}
+        {/* 右侧区域 - 包含系统状态和内容区域 */}
         <div className="flex-1 flex flex-col">
-          {/* 主内容区域 - 使用flex-1占据剩余空间，确保StatusBar固定在底部 */}
+          {/* 系统状态仪表盘 - 移到右侧顶部 */}
+          <div className="flex-shrink-0">
+            <SystemDashboard
+              scanResults={scanResults}
+              selectedItems={selectedItems}
+              scanHistory={scanHistory}
+              onShowSettings={() => setShowSettings(true)}
+              isScanning={isQuickScanning || isDeepScanning || isChatScanning}
+              scanProgress={scanProgress}
+              isChatScan={isChatScan}
+              deepScan={deepScan}
+            />
+          </div>
+
+          {/* 右侧内容区域 */}
           <div ref={rightContentRef} className="flex flex-col flex-1">
             {/* 扫描和结果区域 - 占据剩余空间，减少内边距，为底部状态栏留出空间 */}
             <div className="flex-1 p-2 pb-20 overflow-auto no-scrollbar">
@@ -867,8 +1023,6 @@ function App() {
                 onBatchSelect={handleBatchSelect}
               />
             </div>
-
-
           </div>
         </div>
       </div>

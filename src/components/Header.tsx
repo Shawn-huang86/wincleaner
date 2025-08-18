@@ -1,10 +1,11 @@
 import React from 'react';
-import { Trash2, Shield, Search, Sparkles, Scan, Zap, MessageCircle, Eraser, Package } from 'lucide-react';
+import { Trash2, Shield, Search, Sparkles, Scan, Zap, MessageCircle, Eraser, Package, HardDrive } from 'lucide-react';
 import { ScanProgress } from '../types';
 
 
 interface HeaderProps {
   onOpenFileIdentifier: () => void;
+  onStartCDriveScan: () => void;
   onStartQuickScan: () => void;
   onStartDeepScan: () => void;
   onStartChatScan: () => void;
@@ -15,6 +16,7 @@ interface HeaderProps {
   isChatScanning: boolean;
   isSpecialScanning: boolean;
   isAppScanning: boolean;
+  isCDriveScanning: boolean;
   deepScan: boolean;
   isChatScan: boolean;
   scanProgress: ScanProgress;
@@ -23,6 +25,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenFileIdentifier,
+  onStartCDriveScan,
   onStartQuickScan,
   onStartDeepScan,
   onStartChatScan,
@@ -33,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   isChatScanning,
   isSpecialScanning,
   isAppScanning,
+  isCDriveScanning,
   deepScan,
   isChatScan,
   scanProgress,
@@ -76,6 +80,21 @@ export const Header: React.FC<HeaderProps> = ({
           <Scan className="w-3.5 h-3.5" />
           <span className="hidden lg:inline">{isQuickScanning ? '扫描中...' : '基础清理'}</span>
           <span className="lg:hidden">{isQuickScanning ? '扫描中' : '基础'}</span>
+        </button>
+
+        {/* C盘专清 */}
+        <button
+          onClick={onStartCDriveScan}
+          disabled={isCDriveScanning}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 text-white text-sm font-medium rounded-md transition-all duration-200 disabled:cursor-not-allowed ${
+            isCDriveScanning
+              ? 'bg-gradient-to-r from-indigo-400 to-indigo-500 opacity-75'
+              : 'bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700'
+          }`}
+        >
+          <HardDrive className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline">{isCDriveScanning ? '扫描中...' : 'C盘专清'}</span>
+          <span className="lg:hidden">{isCDriveScanning ? '扫描中' : 'C盘'}</span>
         </button>
 
         {/* 全面清理 */}

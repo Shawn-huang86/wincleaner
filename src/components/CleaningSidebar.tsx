@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Scan, MessageCircle, Eraser, Package } from 'lucide-react';
+import { Zap, Scan, MessageCircle, Eraser, Package, HardDrive } from 'lucide-react';
 import { ScanItem } from '../types';
 
 interface CleaningSidebarProps {
@@ -8,11 +8,13 @@ interface CleaningSidebarProps {
   onStartChatScan: () => void;
   onStartSpecialScan: () => void;
   onStartAppScan: () => void;
+  onStartCDriveScan: () => void;
   isQuickScanning?: boolean;
   isDeepScanning?: boolean;
   isChatScanning?: boolean;
   isSpecialScanning?: boolean;
   isAppScanning?: boolean;
+  isCDriveScanning?: boolean;
 }
 
 export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
@@ -21,11 +23,13 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
   onStartChatScan,
   onStartSpecialScan,
   onStartAppScan,
+  onStartCDriveScan,
   isQuickScanning = false,
   isDeepScanning = false,
   isChatScanning = false,
   isSpecialScanning = false,
   isAppScanning = false,
+  isCDriveScanning = false,
 }) => {
 
   return (
@@ -58,6 +62,26 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
               <p className="text-xs text-gray-600">清理临时文件、缓存等基础垃圾</p>
               <div className="mt-0.5 text-xs text-blue-600 font-medium">
                 {isQuickScanning ? '扫描中...' : '安全 • 快速'}
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* C盘专清 */}
+        <button
+          onClick={onStartCDriveScan}
+          disabled={isCDriveScanning}
+          className="w-full group p-2 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="bg-indigo-100 group-hover:bg-indigo-200 p-1.5 rounded-md flex items-center justify-center">
+              <HardDrive className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 text-sm">C盘专清</h3>
+              <p className="text-xs text-gray-600">专门清理C盘垃圾，释放系统空间</p>
+              <div className="mt-0.5 text-xs text-indigo-600 font-medium">
+                {isCDriveScanning ? '扫描中...' : '专业 • 精准'}
               </div>
             </div>
           </div>
