@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, Clock, HardDrive, Bell, Info, MessageCircle, Brain, Lock, RefreshCw } from 'lucide-react';
-import { ChatFileSettings as ChatFileSettingsType } from '../types';
+import { X, Shield, Clock, HardDrive, Bell, Info, Brain, Lock, RefreshCw } from 'lucide-react';
 import { AIConfigPanel } from './AIConfigPanel';
 import { PermissionStatus } from './PermissionStatus';
 import { UpdateNotification } from './UpdateNotification';
@@ -11,8 +10,6 @@ import { UpdateConfigWizard } from './UpdateConfigWizard';
 interface SettingsPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  chatFileSettings: ChatFileSettingsType;
-  onChatFileSettingsChange: (settings: ChatFileSettingsType) => void;
   useRealCleaning: boolean;
   onUseRealCleaningChange: (useReal: boolean) => void;
 }
@@ -20,8 +17,6 @@ interface SettingsPanelProps {
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   isOpen,
   onClose,
-  chatFileSettings,
-  onChatFileSettingsChange,
   useRealCleaning,
   onUseRealCleaningChange,
 }) => {
@@ -105,158 +100,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </div>
           </div>
 
-          {/* 聊天文件时间筛选 */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-900">聊天文件时间筛选</h3>
-              </div>
-              <button
-                onClick={() => {
-                  onChatFileSettingsChange({ wechatMonths: 3, qqMonths: 3 });
-                }}
-                className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 border border-gray-300 rounded hover:border-gray-400 transition-colors"
-              >
-                恢复默认
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              {/* 当前设置预览 */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-800">当前保护设置</span>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white/60 rounded p-2">
-                    <div className="flex items-center gap-1 mb-1">
-                      <div className="w-3 h-3 bg-green-500 rounded-sm flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">微</span>
-                      </div>
-                      <span className="font-medium text-gray-700">微信</span>
-                    </div>
-                    <p className="text-gray-600">
-                      {chatFileSettings.wechatMonths === 0 ? '清理全部文件' : `保留最近 ${chatFileSettings.wechatMonths} 个月`}
-                    </p>
-                  </div>
-                  <div className="bg-white/60 rounded p-2">
-                    <div className="flex items-center gap-1 mb-1">
-                      <div className="w-3 h-3 bg-blue-500 rounded-sm flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">Q</span>
-                      </div>
-                      <span className="font-medium text-gray-700">QQ</span>
-                    </div>
-                    <p className="text-gray-600">
-                      {chatFileSettings.qqMonths === 0 ? '清理全部文件' : `保留最近 ${chatFileSettings.qqMonths} 个月`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 微信设置 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-sm flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">微</span>
-                  </div>
-                  <label className="text-sm font-medium text-gray-700">微信文件保留时间</label>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { value: 0, label: '不保留' },
-                    { value: 1, label: '1个月' },
-                    { value: 3, label: '3个月' },
-                    { value: 6, label: '6个月' },
-                    { value: 12, label: '1年' },
-                  ].map((option) => (
-                    <button
-                      key={`wechat-${option.value}`}
-                      onClick={() => onChatFileSettingsChange({ ...chatFileSettings, wechatMonths: option.value })}
-                      className={`px-3 py-1.5 text-xs rounded-md border transition-colors ${
-                        chatFileSettings.wechatMonths === option.value
-                          ? 'bg-green-100 border-green-500 text-green-700'
-                          : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">自定义：</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="120"
-                    value={chatFileSettings.wechatMonths}
-                    onChange={(e) => onChatFileSettingsChange({ ...chatFileSettings, wechatMonths: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <span className="text-xs text-gray-600">个月</span>
-                </div>
-              </div>
-
-              {/* QQ设置 */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded-sm flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">Q</span>
-                  </div>
-                  <label className="text-sm font-medium text-gray-700">QQ文件保留时间</label>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { value: 0, label: '不保留' },
-                    { value: 1, label: '1个月' },
-                    { value: 3, label: '3个月' },
-                    { value: 6, label: '6个月' },
-                    { value: 12, label: '1年' },
-                  ].map((option) => (
-                    <button
-                      key={`qq-${option.value}`}
-                      onClick={() => onChatFileSettingsChange({ ...chatFileSettings, qqMonths: option.value })}
-                      className={`px-3 py-1.5 text-xs rounded-md border transition-colors ${
-                        chatFileSettings.qqMonths === option.value
-                          ? 'bg-blue-100 border-blue-500 text-blue-700'
-                          : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">自定义：</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="120"
-                    value={chatFileSettings.qqMonths}
-                    onChange={(e) => onChatFileSettingsChange({ ...chatFileSettings, qqMonths: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                  <span className="text-xs text-gray-600">个月</span>
-                </div>
-              </div>
-
-              {/* 说明 */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Info className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">说明</span>
-                </div>
-                <p className="text-xs text-gray-600">
-                  设置保留时间可避免误删重要的聊天文件。临时文件和日志文件不受时间限制影响，始终可以安全清理。
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* 自动化设置 */}
           <div className="space-y-4">

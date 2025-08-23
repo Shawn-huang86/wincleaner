@@ -45,10 +45,11 @@ function App() {
   const [isSpecialScanning, setIsSpecialScanning] = useState(false);
   const [isAppScanning, setIsAppScanning] = useState(false);
 
-  const [chatFileSettings, setChatFileSettings] = useState<ChatFileSettings>({
+  // 使用固定的默认聊天文件设置（不再通过UI配置）
+  const chatFileSettings: ChatFileSettings = {
     wechatMonths: 3,
     qqMonths: 3
-  });
+  };
   const [cleaningProgress, setCleaningProgress] = useState({
     current: 0,
     total: 0,
@@ -1058,8 +1059,6 @@ function App() {
       <SettingsPanel
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        chatFileSettings={chatFileSettings}
-        onChatFileSettingsChange={setChatFileSettings}
         useRealCleaning={useRealCleaning}
         onUseRealCleaningChange={setUseRealCleaning}
       />
