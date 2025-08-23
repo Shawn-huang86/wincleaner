@@ -3,11 +3,20 @@ module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
   testMatch: [
-    '**/__tests__/**/*.ts',
-    '**/?(*.)+(spec|test).ts'
+    '**/__tests__/**/*.{ts,tsx}',
+    '**/?(*.)+(spec|test).{ts,tsx}'
   ],
   transform: {
-    '^.+\.ts$': 'ts-jest',
+    '^.+\.(ts|tsx)$': 'ts-jest',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true
+      }
+    }
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

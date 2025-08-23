@@ -312,21 +312,35 @@ export class ApplicationManager {
    */
   static formatSize(bytes: number): string {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  /**
+   * 设置测试数据（仅用于测试）
+   */
+  static setTestData(apps: ApplicationInfo[]): void {
+    this.installedApps = apps;
+  }
+
+  /**
+   * 清空应用数据（仅用于测试）
+   */
+  static clearData(): void {
+    this.installedApps = [];
   }
 
   /**
    * 检查是否在Electron环境中
    */
   private static isElectronEnvironment(): boolean {
-    return typeof window !== 'undefined' && 
-           window.electronAPI && 
-           typeof window.electronAPI.scanJunkFiles === 'function';
+    return typeof window !== 'undefined' &&
+           (window as any).electronAPI &&
+           typeof (window as any).electronAPI.scanJunkFiles === 'function';
   }
 
   /**

@@ -50,12 +50,6 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
           <h2 className="text-base font-semibold text-gray-900">系统状态</h2>
         </div>
 
-        {/* 种子用户标识 */}
-        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded-md">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-xs font-medium text-green-700">种子用户 • 全功能免费</span>
-        </div>
-
         {/* 扫描状态提示 - 居中显示 */}
         <div className="flex-1 flex justify-center">
           {!isScanning && scanResults.length === 0 && (
@@ -150,15 +144,27 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
           </div>
           <div className="space-y-1">
             <div className="text-xl font-bold text-gray-900 whitespace-nowrap">
-              {scanResults.length > 0 ? formatFileSize(totalSize) : '待扫描'}
+              {scanResults.length > 0 ?
+                (selectedItems.size > 0 ? formatFileSize(selectedSize) : formatFileSize(totalSize))
+                : '待扫描'}
             </div>
             <div className="text-sm text-gray-700">
-              {scanResults.length > 0 ? `发现 ${scanResults.length} 项垃圾文件` : '点击左侧按钮开始扫描'}
+              {scanResults.length > 0 ?
+                (selectedItems.size > 0 ?
+                  `已选择 ${selectedItems.size} 项，共 ${formatFileSize(selectedSize)}`
+                  : `发现 ${scanResults.length} 项垃圾文件`)
+                : '点击左侧按钮开始扫描'}
             </div>
             <div className="w-full bg-blue-200 rounded-full h-1.5">
               <div
                 className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
-                style={{ width: scanResults.length > 0 ? '75%' : '0%' }}
+                style={{
+                  width: scanResults.length > 0 ?
+                    (selectedItems.size > 0 ?
+                      `${Math.min(100, (selectedSize / totalSize) * 100)}%`
+                      : '75%')
+                    : '0%'
+                }}
               ></div>
             </div>
             {isScanning && (

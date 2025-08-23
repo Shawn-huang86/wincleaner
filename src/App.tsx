@@ -628,9 +628,13 @@ function App() {
           id: `app-${app.name}-${app.version}`,
           name: app.name,
           path: app.installPath,
-          size: app.size,
+          size: formatFileSize(app.size),
+          sizeBytes: app.size,
           category: 'application',
           type: 'application',
+          riskLevel: app.aiAnalysis?.safeToUninstall === false ? 'high' :
+                    (app.isSystemApp ? 'caution' : 'safe'),
+          suggestion: app.aiAnalysis?.recommendations[0] || '可安全卸载',
           lastModified: app.installDate,
           canDelete: !app.isSystemApp && app.aiAnalysis?.safeToUninstall !== false,
           description: `${app.publisher} - ${app.version}${app.isSystemApp ? ' (系统应用)' : ''}`

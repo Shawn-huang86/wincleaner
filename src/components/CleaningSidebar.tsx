@@ -36,17 +36,13 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
     <div className="w-56 bg-white border-r border-gray-200 flex flex-col">
       {/* 标题 */}
       <div className="p-2 border-b border-gray-200">
-        <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex items-center justify-center gap-1.5 mb-1">
           <div className="p-1 bg-blue-100 rounded-md">
             <Zap className="w-3.5 h-3.5 text-blue-600" />
           </div>
           <h2 className="text-base font-semibold text-gray-900">清理功能</h2>
         </div>
-        <p className="text-xs text-gray-500">选择清理模式开始扫描</p>
-        <div className="mt-1.5 flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-xs">
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-          <span className="text-green-700 font-medium">种子用户专享：全功能免费体验</span>
-        </div>
+        <p className="text-xs text-gray-500 text-center">选择清理模式开始扫描</p>
       </div>
 
       {/* 清理功能按钮 - 垂直布局，统一高度 */}
