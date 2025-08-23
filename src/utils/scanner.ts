@@ -3,6 +3,7 @@ import { formatFileSize } from './helpers';
 
 
 const SCAN_ITEMS = [
+  // 种子用户阶段 - 所有功能免费开放
   {
     name: 'Windows 临时文件',
     path: 'C:\\Windows\\Temp',
@@ -268,13 +269,13 @@ export const simulateScanning = async (
 ): Promise<void> => {
   let itemsToScan = SCAN_ITEMS.filter(item => !item.isDeepScan || deepScan);
 
-  // 根据扫描类型过滤项目
-  if (scanType === 'chat-only') {
-    // 只扫描微信QQ文件
-    itemsToScan = itemsToScan.filter(item => item.category === 'wechat' || item.category === 'qq');
-  } else if (scanType === 'exclude-chat') {
-    // 排除微信QQ文件
+  // 种子用户阶段：所有功能免费开放，不需要权限检查
+  if (scanType === 'exclude-chat') {
+    // 基础清理模式：排除聊天文件
     itemsToScan = itemsToScan.filter(item => item.category !== 'wechat' && item.category !== 'qq');
+  } else if (scanType === 'chat-only') {
+    // 聊天清理模式：只保留聊天文件
+    itemsToScan = itemsToScan.filter(item => item.category === 'wechat' || item.category === 'qq');
   }
   // scanType === 'all' 时不过滤
 

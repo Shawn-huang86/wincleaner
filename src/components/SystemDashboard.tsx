@@ -32,7 +32,7 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
   const selectedSize = scanResults
     .filter(item => selectedItems.has(item.id))
     .reduce((sum, item) => sum + item.sizeBytes, 0);
-  
+
   const riskCounts = scanResults.reduce((acc, item) => {
     acc[item.riskLevel] = (acc[item.riskLevel] || 0) + 1;
     return acc;
@@ -48,6 +48,12 @@ export const SystemDashboard: React.FC<SystemDashboardProps> = ({
             <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
           </div>
           <h2 className="text-base font-semibold text-gray-900">系统状态</h2>
+        </div>
+
+        {/* 种子用户标识 */}
+        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded-md">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-xs font-medium text-green-700">种子用户 • 全功能免费</span>
         </div>
 
         {/* 扫描状态提示 - 居中显示 */}

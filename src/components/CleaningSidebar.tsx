@@ -43,11 +43,15 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
           <h2 className="text-base font-semibold text-gray-900">清理功能</h2>
         </div>
         <p className="text-xs text-gray-500">选择清理模式开始扫描</p>
+        <div className="mt-1.5 flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded text-xs">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          <span className="text-green-700 font-medium">种子用户专享：全功能免费体验</span>
+        </div>
       </div>
 
       {/* 清理功能按钮 - 垂直布局 */}
       <div className="flex-1 p-2 pb-12 space-y-2 overflow-visible">
-        {/* 快速清理 */}
+        {/* 基础清理 - 免费功能 */}
         <button
           onClick={onStartQuickScan}
           disabled={isQuickScanning}
@@ -87,7 +91,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
           </div>
         </button>
 
-        {/* 深度清理 */}
+        {/* 全面清理 */}
         <button
           onClick={onStartDeepScan}
           disabled={isDeepScanning}
@@ -107,7 +111,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
           </div>
         </button>
 
-        {/* 微信QQ清理 */}
+        {/* 聊天清理 */}
         <button
           onClick={onStartChatScan}
           disabled={isChatScanning}
@@ -157,7 +161,7 @@ export const CleaningSidebar: React.FC<CleaningSidebarProps> = ({
           </div>
         </button>
 
-        {/* 应用管理 */}
+        {/* 应用管理 - 免费功能 */}
         <button
           onClick={onStartAppScan}
           disabled={isAppScanning}

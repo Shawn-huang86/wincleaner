@@ -11,6 +11,7 @@ export interface ScanItem {
   lastModified?: Date;
   isChatFile?: boolean;
   canDelete?: boolean; // 是否可以删除，默认根据riskLevel判断
+  isPremium?: boolean; // 是否为收费功能
 }
 
 export interface ScanProgress {
